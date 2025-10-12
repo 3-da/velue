@@ -1,0 +1,297 @@
+<div class="flex w-full h-full justify-center items-center">
+  <div class="w-[90vw] sm:w-full sm:max-w-md max-h-[80vh] overflow-y-auto rounded-lg shadow-lg p-8 bg-surface-900">
+    <p-tabs [(value)]="activeTab">
+      <p-tablist class="mb-8">
+        @for (tab of tabs; track tab.value) {
+          <p-tab class="text-lg font-medium" [value]="tab.value">
+            @if (tab.value === 0) {
+              <i class="pi pi-sign-in mr-2"></i>
+            } @else {
+              <i class="pi pi-user-plus mr-2"></i>
+            }
+            {{ tab.title }}
+          </p-tab>
+        }
+      </p-tablist>
+
+      <p-tabpanels>
+        <h2 class="text-center text-2xl font-bold mb-8">
+          @if (activeTab === 0) {
+            Welcome back!
+          } @else {
+            Create Account
+          }
+        </h2>
+
+        <p-tabpanel [value]="0">
+          <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+            <p-floatlabel class="mb-1" variant="on">
+              <input
+                autocomplete="off"
+                class="w-full"
+                formControlName="email"
+                id="email"
+                pInputText
+                [class.p-invalid]="isFieldInvalid(loginForm, 'email')"
+              />
+              <label for="email">Email</label>
+            </p-floatlabel>
+            @if (getFieldError(loginForm, 'email')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(loginForm, 'email') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-floatlabel class="mb-1" variant="on">
+              <p-password
+                class="w-full"
+                formControlName="password"
+                inputId="password"
+                inputStyleClass="w-full"
+                [class.p-invalid]="isFieldInvalid(loginForm, 'password')"
+                [feedback]="false"
+                [toggleMask]="true"
+              />
+              <label for="password">Password</label>
+            </p-floatlabel>
+            @if (getFieldError(loginForm, 'password')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(loginForm, 'password') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-button label="Forgot Password?" link [style]="{ padding: '0' }" (onClick)="openForgotPasswordDialog()"/>
+
+            <div class="w-full mt-4 mb-6">
+              <p-button
+                label="Login"
+                type="submit"
+                [disabled]="!loginForm.valid"
+                [severity]="!loginForm.valid ? 'secondary' : 'primary'"
+                [style]="{ width: '100%' }"
+              />
+            </div>
+          </form>
+        </p-tabpanel>
+
+        <p-tabpanel [value]="1">
+          <form [formGroup]="registrationForm" (ngSubmit)="onRegister()">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p-floatlabel class="mb-1" variant="on">
+                  <input
+                    class="w-full"
+                    formControlName="firstName"
+                    id="firstName"
+                    pInputText
+                    [class.p-invalid]="isFieldInvalid(registrationForm, 'firstName')"
+                  />
+                  <label for="firstName">First Name</label>
+                </p-floatlabel>
+                @if (getFieldError(registrationForm, 'firstName')) {
+                  <small class="text-red-400 block">{{ getFieldError(registrationForm, 'firstName') }}</small>
+                }
+              </div>
+
+              <div>
+                <p-floatlabel class="mb-1" variant="on">
+                  <input
+                    class="w-full"
+                    formControlName="lastName"
+                    id="lastName"
+                    pInputText
+                    [class.p-invalid]="isFieldInvalid(registrationForm, 'lastName')"
+                  />
+                  <label for="lastName">Last Name</label>
+                </p-floatlabel>
+                @if (getFieldError(registrationForm, 'lastName')) {
+                  <small class="text-red-400 block">{{ getFieldError(registrationForm, 'lastName') }}</small>
+                }
+              </div>
+            </div>
+            <div class="mb-4"></div>
+
+            <p-floatlabel class="mb-1" variant="on">
+              <input
+                class="w-full"
+                formControlName="email"
+                id="register_email"
+                pInputText
+                type="email"
+                [class.p-invalid]="isFieldInvalid(registrationForm, 'email')"
+              />
+              <label for="register_email">Email</label>
+            </p-floatlabel>
+            @if (getFieldError(registrationForm, 'email')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(registrationForm, 'email') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-floatlabel class="mb-1" variant="on">
+              <p-password
+                class="w-full"
+                formControlName="password"
+                inputId="register_password"
+                [class.p-invalid]="isFieldInvalid(registrationForm, 'password')"
+                [feedback]="false"
+                [inputStyle]="{ width: '100%' }"
+                [toggleMask]="true"
+              />
+              <label for="register_password">Password</label>
+            </p-floatlabel>
+            @if (getFieldError(registrationForm, 'password')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(registrationForm, 'password') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-floatlabel class="mb-1" variant="on">
+              <p-password
+                class="w-full"
+                formControlName="confirmPassword"
+                inputId="confirm_password"
+                [class.p-invalid]="isFieldInvalid(registrationForm, 'confirmPassword')"
+                [feedback]="false"
+                [inputStyle]="{ width: '100%' }"
+                [toggleMask]="true"
+              />
+              <label for="confirm_password">Confirm Password</label>
+            </p-floatlabel>
+            @if (getFieldError(registrationForm, 'confirmPassword')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(registrationForm, 'confirmPassword') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-floatlabel class="mb-1" variant="on">
+              <p-datepicker
+                class="w-full"
+                dateFormat="dd.mm.yy"
+                formControlName="birthDate"
+                inputId="birthDate"
+                placeholder="DD.MM.YYYY"
+                [class.p-invalid]="isFieldInvalid(registrationForm, 'birthDate')"
+                [showIcon]="true"
+                [showOnFocus]="false"
+              />
+              <label for="birthDate">Birth Date</label>
+            </p-floatlabel>
+            @if (getFieldError(registrationForm, 'birthDate')) {
+              <small class="text-red-400 block mb-3">{{ getFieldError(registrationForm, 'birthDate') }}</small>
+            } @else {
+              <div class="mb-4"></div>
+            }
+
+            <p-floatlabel class="mb-4" variant="on">
+              <input
+                class="w-full"
+                formControlName="phone"
+                id="phone"
+                pInputText
+                placeholder="030 12345678"
+                prefix="+49"
+                type="tel"
+              />
+              <label for="phone">Telefon (Optional)</label>
+            </p-floatlabel>
+
+            <p-floatlabel class="mb-4" variant="on">
+              <input
+                class="w-full"
+                formControlName="address"
+                id="address"
+                pInputText
+              />
+              <label for="address">Address (Optional)</label>
+            </p-floatlabel>
+
+            <p-floatlabel class="mb-4" variant="on">
+              <input
+                class="w-full"
+                formControlName="emergencyContact"
+                id="emergencyContact"
+                pInputText
+              />
+              <label for="emergencyContact">Emergency Contact (Optional)</label>
+            </p-floatlabel>
+
+            <div class="mb-4 space-y-3">
+              <div>
+                <div class="flex items-center">
+                  <p-checkbox
+                    formControlName="acceptsTerms"
+                    inputId="acceptsTerms"
+                    [binary]="true"
+                  />
+                  <label class="ml-2 text-sm" for="acceptsTerms">
+                    I accept the Terms and Conditions <span class="text-red-500">*</span>
+                  </label>
+                </div>
+                @if (getFieldError(registrationForm, 'acceptsTerms')) {
+                  <small class="text-red-400 block ml-8">{{ getFieldError(registrationForm, 'acceptsTerms') }}</small>
+                }
+              </div>
+
+              <div>
+                <div class="flex items-center">
+                  <p-checkbox
+                    formControlName="acceptsPrivacy"
+                    inputId="acceptsPrivacy"
+                    [binary]="true"
+                  />
+                  <label class="ml-2 text-sm" for="acceptsPrivacy">
+                    I accept the Privacy Policy <span class="text-red-500">*</span>
+                  </label>
+                </div>
+                @if (getFieldError(registrationForm, 'acceptsPrivacy')) {
+                  <small class="text-red-400 block ml-8">{{ getFieldError(registrationForm, 'acceptsPrivacy') }}</small>
+                }
+              </div>
+
+              <div class="flex items-center">
+                <p-checkbox
+                  formControlName="acceptsMarketing"
+                  inputId="acceptsMarketing"
+                  [binary]="true"
+                />
+                <label class="ml-2 text-sm" for="acceptsMarketing">
+                  I accept marketing communications
+                </label>
+              </div>
+            </div>
+
+            <div class="w-full mb-6">
+              <p-button
+                label="Register"
+                type="submit"
+                [disabled]="!registrationForm.valid"
+                [severity]="!registrationForm.valid ? 'secondary' : 'primary'"
+                [style]="{ width: '100%' }"
+              />
+            </div>
+          </form>
+        </p-tabpanel>
+
+        <p-divider align="center" class="mb-6">
+          <span class="text-sm">OR</span>
+        </p-divider>
+
+        <button class="w-full mb-4" outlined pButton severity="secondary" type="button" (click)="continueWithGoogle()">
+          <i class="pi pi-google mr-3 text-red-400"></i>
+          <span class="my-1 font-medium">Continue with Google</span>
+        </button>
+
+        <button class="w-full mb-4" outlined pButton severity="info" type="button" (click)="continueWithFacebook()">
+          <i class="pi pi-facebook mr-3"></i>
+          <span class="my-1 font-medium">Continue with Facebook</span>
+        </button>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+</div>
+
+<app-forgot-password-dialog
+  [visible]="showForgotPasswordDialog()"
+  (dialogClose)="closeForgotPasswordDialog()"
+/>

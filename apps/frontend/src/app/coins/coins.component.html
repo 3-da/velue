@@ -1,0 +1,26 @@
+<div class="w-3/4 sm:w-full mx-auto sm:mx-0 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 px-4 sm:px-8 items-stretch">
+  @for (coinsPackage of coinPackages(); track coinsPackage.price) {
+    <button
+      class="neon-card rounded-2xl sm:rounded-xl p-4 sm:p-12 text-center text-white flex flex-col justify-start h-full"
+      type="button"
+      (click)="purchaseCoins(coinsPackage)"
+    >
+      <h1
+        class="flex flex-nowrap items-center justify-center gap-2 text-3xl sm:text-5xl mb-2 text-primary font-bold">
+        <span>{{ coinsPackage.coins }}</span>
+        <i class="pi pi-bitcoin" style="font-size: 0.65em"></i>
+        <span>/</span>
+        <span>{{ coinsPackage.price }}</span>
+        <i class="pi pi-euro text-current" style="font-size: 0.65em"></i>
+      </h1>
+
+      <h3 class="shadowed-text text-xl font-bold mb-2 text-white sm:text-lg">
+        {{ coinsPackage.name }}
+      </h3>
+
+      <p class="shadowed-text text-white/70 text-sm sm:text-sm m-0">
+        {{ coinsPackage.description }}
+      </p>
+    </button>
+  }
+</div>

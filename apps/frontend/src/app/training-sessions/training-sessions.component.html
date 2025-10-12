@@ -1,0 +1,73 @@
+<div class="tabs-wrapper w-full md:w-2/3 mx-auto">
+  <p-tabs class="w-full bg-surface-900 opacity-100" [value]="selectedTab()">
+    <p-tablist class="rounded-t-lg">
+      @for (dateGroup of uniqueDates(); track dateGroup.dateKey) {
+        <p-tab [value]="dateGroup.dateKey" (click)="setSelectedTab(dateGroup.dateKey)">
+          {{ (dateGroup.date | date:'EEE d MMM':'en-US') || '' }}
+        </p-tab>
+      }
+    </p-tablist>
+  </p-tabs>
+
+  <div class="overflow-y-auto bg-black-opacity">
+    @for (dateGroup of uniqueDates(); track dateGroup.dateKey) {
+      @if (selectedTab() === dateGroup.dateKey) {
+        <div data-testid="date-group">
+          <h2 class="sr-only" data-testid="date-header">{{ dateGroup.date | date:'fullDate' }}</h2>
+          @for (session of dateGroup.sessions; track session.id) {
+            <p-card class="w-3/4 my-8 mx-auto" [attr.data-testid]="'training-session-card'">
+              <ng-template pTemplate="header">
+                <div class="p-4">
+                  <h2 class="text-xl font-semibold mb-2" data-testid="session-type">{{ session.trainingType | sessionTitle }}</h2>
+                  <h3 class="text-lg text-amber-400" data-testid="session-datetime">Starting time: {{ session.startTime | startTime }}</h3>
+                </div>
+              </ng-template>
+              <div>
+                <p>Duration: {{ session.durationMinutes }} min</p>
+                <p data-testid="session-trainer">Trainer: {{ session.trainer.user.firstName }} {{ session.trainer.user.lastName }}</p>
+                <div class="flex gap-2 my-2">
+                  <p>Status:</p>
+                  <p-tag
+                    data-testid="session-status-badge"
+                    value=" {{session.status | lowercase}}"
+                    [rounded]="true"
+                    [severity]="getStatusColor(session)"
+                  />
+                </div>
+                <div class="flex gap-2 my-2">
+                  <p>Booked bikes:</p>
+                  <p-tag
+                    data-testid="session-spots"
+                    value="{{ session.bookings.length || 0 }}/{{ session.maxParticipants }}"
+                    [rounded]="true"
+                    [severity]="getAvailabilityStatus(session)"
+                  />
+                </div>
+              </div>
+              <ng-template pTemplate="footer">
+                <div class="flex justify-end p-4">
+                  @if (hasUserBookedSession(session)) {
+                    <p-button
+                      data-testid="cancel-booking-btn"
+                      label="Cancel Booking"
+                      severity="danger"
+                      (onClick)="cancelBooking(session)"
+                    />
+                  } @else {
+                    <p-button
+                      data-testid="book-session-btn"
+                      label="Book Now!"
+                      severity="success"
+                      [disabled]="isSessionFull(session)"
+                      (onClick)="bookSession(session.id)"
+                    />
+                  }
+                </div>
+              </ng-template>
+            </p-card>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
