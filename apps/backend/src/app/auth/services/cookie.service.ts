@@ -69,9 +69,9 @@ export class CookieService {
       httpOnly: true,
     });
 
-    // Auth state cookie for frontend (not httpOnly)
+    // Auth state cookie for frontend (not httpOnly) - matches refresh token expiry
     this.setCookieWithPartitioned(res, 'auth_state', 'authenticated', {
-      maxAge: 15 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days, same as refresh token
       path: '/',
       httpOnly: false,
     });

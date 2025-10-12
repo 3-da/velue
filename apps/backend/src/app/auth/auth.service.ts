@@ -199,11 +199,16 @@ export class AuthService {
       },
     });
 
-    // Send confirmation email
-    await this.emailService.sendPasswordChangedEmail(
-      user.email,
-      `${user.firstName} ${user.lastName}`,
-    );
+    // Send confirmation email (don't fail password change if email fails)
+    try {
+      await this.emailService.sendPasswordChangedEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+      );
+    } catch (error) {
+      console.error('Failed to send password change confirmation email:', error);
+      // Don't throw - password change succeeded
+    }
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -279,10 +284,15 @@ export class AuthService {
       },
     });
 
-    // Send confirmation email
-    await this.emailService.sendPasswordChangedEmail(
-      user.email,
-      `${user.firstName} ${user.lastName}`,
-    );
+    // Send confirmation email (don't fail password reset if email fails)
+    try {
+      await this.emailService.sendPasswordChangedEmail(
+        user.email,
+        `${user.firstName} ${user.lastName}`,
+      );
+    } catch (error) {
+      console.error('Failed to send password reset confirmation email:', error);
+      // Don't throw - password reset succeeded
+    }
   }
 }
