@@ -1,0 +1,61 @@
+@if (emails()?.length === 0) {
+  <div class="w-full h-full flex items-center justify-center">
+    <div class="text-center">
+      <i class="pi pi-envelope text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white mb-4 shadowed-text"></i>
+      <p class="shadowed-text text-xl sm:text-2xl md:text-3xl text-white">No emails sent yet.</p>
+      <p class="shadowed-text text-white/70 mt-2 text-base sm:text-lg md:text-xl">Password change notifications will appear here.</p>
+    </div>
+  </div>
+} @else {
+  <div class="tabs-wrapper w-full md:w-2/3 mx-auto">
+    <div class="flex justify-end p-4 bg-surface-900">
+      <p-button
+        icon="pi pi-trash"
+        label="Delete All Emails"
+        severity="danger"
+        [loading]="deleting()"
+        (onClick)="deleteAllEmails()"
+      />
+    </div>
+    <div class="overflow-y-auto bg-black-opacity">
+      @for (email of emails(); track email.sentAt) {
+        <p-card class="w-3/4 my-8 mx-auto cursor-pointer" (click)="viewEmailContent(email)">
+          <ng-template pTemplate="header">
+            <div class="p-4">
+              <h2 class="text-xl font-semibold mb-2">{{ email.subject }}</h2>
+              <h3 class="text-lg text-amber-400">
+                <i class="pi pi-calendar mr-2"></i>
+                {{ email.sentAt | date:'medium' }}
+              </h3>
+            </div>
+          </ng-template>
+          <div>
+            <p><strong>To:</strong> {{ email.to }}</p>
+            <p class="text-gray-400 mt-2">{{ email.textContent.substring(0, 150) }}...</p>
+          </div>
+          <ng-template pTemplate="footer">
+            <div class="flex justify-end p-4">
+              <p-tag severity="success" value="Sent" [rounded]="true" />
+            </div>
+          </ng-template>
+        </p-card>
+      }
+    </div>
+  </div>
+}
+
+<p-dialog
+  contentStyleClass="max-h-[70vh] overflow-y-auto"
+  styleClass="w-11/12 md:w-3/4 lg:w-2/3"
+  [closable]="true"
+  [draggable]="false"
+  [focusOnShow]="false"
+  [modal]="true"
+  [resizable]="false"
+  [(visible)]="showEmailDialog"
+>
+  <ng-template pTemplate="header">
+    <h2 class="text-xl font-semibold">{{ selectedEmail()?.subject }}</h2>
+  </ng-template>
+  <div [innerHTML]="sanitizedEmailContent()"></div>
+</p-dialog>

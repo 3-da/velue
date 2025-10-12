@@ -1,0 +1,10 @@
+{
+  "name": "@velue/shared-models",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "@velue/shared-data-access": "*",
+    "tslib": "*"
+  }
+}

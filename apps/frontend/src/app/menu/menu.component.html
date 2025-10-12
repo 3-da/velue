@@ -1,0 +1,51 @@
+<p-menubar class="lg:text-xl md:text-lg sm:text-base bg-black rounded-none" style="padding: 1rem 2rem; border: unset; border-radius: unset" [model]="items()">
+  <ng-template #start>
+    <img alt="Velué Logo" class="lg:w-10 lg:h-10 md:w-8 md:h-8 sm:w-7 sm:h-7" height="40" ngSrc="/logo.svg" width="40">
+  </ng-template>
+  <ng-template #item let-item let-root="root">
+    <a class="flex items-center p-menubar-item-link" pRipple>
+      @if (item.icon) {
+        <i class="mr-2 md:mr-1 sm:mr-1" [class]="item.icon"></i>
+      }
+      <span class="lg:text-xl md:text-lg sm:text-base">{{ item.label }}</span>
+      @if (item.items) {
+        <i class="ml-auto pi" [class.pi-angle-down]="root" [class.pi-angle-right]="!root"></i>
+      }
+    </a>
+  </ng-template>
+  <ng-template #end>
+    <div class="flex items-center gap-4 md:gap-3 sm:gap-2">
+      @if (!authService.isAuthenticated()) {
+        <p-button
+          label="Log in"
+          [size]="buttonSize()"
+          (click)="navigateAuth()"
+        />
+      }
+
+      @if (authService.isAuthenticated()) {
+        <div class="flex items-center gap-2 text-white">
+<!--          TODO : Replace Bitcoin icon with custom coins icon-->
+          <i class="pi pi-bitcoin" style="font-size: 2rem;"></i>
+          <span class="font-semibold">{{ userService.getUserCoins() }}</span>
+        </div>
+
+        <p-avatar
+          class="cursor-pointer"
+          image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
+          shape="circle"
+          [size]="avatarSize()"
+          (click)="showProfileMenu($event)"/>
+        <!-- TODO: Replace hardcoded avatar with real user photo when user photo feature is implemented -->
+      }
+      <p-menu #profileMenu [model]="profileMenuItems()" [popup]="true" />
+    </div>
+  </ng-template>
+</p-menubar>
+
+<app-change-password-dialog
+  [visible]="showChangePasswordDialog()"
+  (dialogClose)="closeChangePasswordDialog()"
+/>
+
+<p-confirmDialog />

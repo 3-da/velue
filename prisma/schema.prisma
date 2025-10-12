@@ -1,0 +1,270 @@
+// Velué Fitness Booking System - Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../libs/shared-data-access/src/lib/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  TRAINER
+  ADMIN
+}
+
+enum TrainingType {
+  SPINNING_BEGINNER
+  SPINNING_INTERMEDIATE
+  SPINNING_ADVANCED
+  SPINNING_HIIT
+  SPINNING_ENDURANCE
+}
+
+enum TrainingStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+// Fixed time slots to standardize scheduling and prevent conflicts
+enum TrainingTimeSlot {
+  SLOT_0900 // 9:00 AM - Early morning session
+  SLOT_1030 // 10:30 AM - Mid-morning session
+  SLOT_1200 // 12:00 PM - Lunch break session
+  SLOT_1600 // 4:00 PM - Afternoon session
+  SLOT_1730 // 5:30 PM - After-work session
+  SLOT_1900 // 7:00 PM - Evening session
+  SLOT_2030 // 8:30 PM - Late evening session
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  NO_SHOW
+  ATTENDED
+}
+
+enum CoinsTransactionType {
+  PURCHASE
+  BOOKING_CHARGE
+  BOOKING_REFUND
+  ADMIN_ADJUSTMENT
+  PROMOTIONAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ConsentType {
+  TERMS_OF_SERVICE // AGB
+  PRIVACY_POLICY // DSGVO
+  MARKETING_COMMUNICATIONS // Werbung
+}
+
+// Polymorphic inheritance: BaseUser + role-specific tables (Customer/Trainer/Admin)
+model BaseUser {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  birthDate DateTime // Required for age verification
+  phone     String?
+  address   String?
+  role      UserRole
+  isActive  Boolean  @default(true) // Soft delete - inactive users cannot login
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime @default(now()) // Required for security tracking
+  passwordLastChanged DateTime @default(now()) // Track password updates for security audit
+  passwordResetToken String? // Token for password reset flow
+  passwordResetExpiry DateTime? // Expiry timestamp for reset token
+
+  customer    Customer?
+  trainer     Trainer?
+  admin       Admin?
+  UserConsent UserConsent[]
+
+  // PERFORMANCE INDEXES:
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([role, isActive])
+  @@map("users")
+}
+
+model Customer {
+  id                     String         @id @default(uuid())
+  userId                 String         @unique
+  coins                  Int            @default(0)
+  preferredTrainingTypes TrainingType[] // For personalized recommendations
+  emergencyContact       String? // Required by insurance for high-intensity workouts
+
+  user              BaseUser           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coinsTransactions CoinsTransaction[]
+  bookings          Booking[]
+  coinsPurchases    CoinsPurchase[]
+
+  @@index([userId])
+  @@index([preferredTrainingTypes])
+  @@map("customers")
+}
+
+model UserConsent {
+  id          String      @id @default(uuid())
+  userId      String
+  consentType ConsentType
+  granted     Boolean
+  grantedAt   DateTime    @default(now())
+  revokedAt   DateTime?
+  ipAddress   String? // For legal proof
+  userAgent   String? // For legal proof
+
+  user BaseUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, consentType])
+  @@index([userId])
+  @@index([consentType])
+  @@map("user_consents")
+}
+
+model Trainer {
+  id             String         @id @default(uuid())
+  userId         String         @unique
+  certification  String // Required for insurance/compliance
+  specialization TrainingType[] // Determines which session types they can lead
+
+  user             BaseUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainingSessions TrainingSession[]
+
+  @@index([userId])
+  @@index([certification])
+  @@index([specialization])
+  @@map("trainers")
+}
+
+model Admin {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  user BaseUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("admins")
+}
+
+model TrainingSession {
+  id              String           @id @default(uuid())
+  trainerId       String
+  trainingType    TrainingType
+  date            DateTime         @db.Date
+  startTime       TrainingTimeSlot
+  durationMinutes Int              @default(45)
+  maxParticipants Int              @default(30)
+  coinsRequired   Int              @default(10)
+  status          TrainingStatus   @default(SCHEDULED)
+  qrCode          String           @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  trainer  Trainer   @relation(fields: [trainerId], references: [userId])
+  bookings Booking[]
+
+  @@unique([date, startTime])
+  @@index([date])
+  @@index([trainerId])
+  @@index([status])
+  @@map("training_sessions")
+}
+
+model Booking {
+  id                String        @id @default(uuid())
+  userId            String
+  trainingSessionId String
+  status            BookingStatus @default(PENDING)
+  coinsUsed         Int           @default(10)
+  bookedAt          DateTime      @default(now())
+  cancelledAt       DateTime?
+  attendedAt        DateTime? // When customer attended session (check-in timestamp) - important for insurance
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  customer          Customer           @relation(fields: [userId], references: [userId])
+  trainingSession   TrainingSession    @relation(fields: [trainingSessionId], references: [id])
+  coinsTransactions CoinsTransaction[]
+
+  @@unique([userId, trainingSessionId])
+  @@index([userId])
+  @@index([trainingSessionId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model CoinsTransaction {
+  id               String               @id @default(uuid())
+  userId           String
+  amount           Int
+  type             CoinsTransactionType
+  description      String
+  balanceAfter     Int // Required for audit and reconciliation
+  relatedBookingId String?
+  orderId          String?              @unique
+  createdAt        DateTime             @default(now())
+
+  customer       Customer       @relation(fields: [userId], references: [userId])
+  relatedBooking Booking?       @relation(fields: [relatedBookingId], references: [id])
+  coinsPurchase  CoinsPurchase? @relation(fields: [orderId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("coins_transactions")
+}
+
+model CoinsPurchase {
+  id              String        @id @default(uuid())
+  userId          String
+  coinsPackageId  String
+  quantity        Int           @default(1)
+  totalPrice      Decimal       @db.Decimal(8, 2)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  paymentIntentId String? // External payment system reference
+  createdAt       DateTime      @default(now())
+  completedAt     DateTime? // When payment was successfully processed
+
+  customer         Customer          @relation(fields: [userId], references: [userId])
+  coinsPackage     CoinsPackage      @relation(fields: [coinsPackageId], references: [id])
+  coinsTransaction CoinsTransaction?
+
+  @@index([userId])
+  @@index([paymentStatus])
+  @@map("coins_purchases")
+}
+
+model CoinsPackage {
+  id            String   @id @default(cuid())
+  name          String
+  coins         Int
+  price         Decimal  @db.Decimal(8, 2)
+  discount      Decimal? @default(0.00) @db.Decimal(5, 2) // Percentage discount (0-100)
+  description   String?
+  stripePriceId String? // Stripe Price ID for checkout integration
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  coinsPurchases CoinsPurchase[]
+
+  @@index([isActive])
+  @@map("coins_packages")
+}
