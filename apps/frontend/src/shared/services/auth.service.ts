@@ -2,7 +2,13 @@ import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, firstValueFrom, Observable, tap, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LoginRequest, RegisterCustomerRequest, RegisterCustomerResponse, TokenPair, UpdatePasswordRequest } from '@velue/shared-models';
+import {
+  LoginRequest,
+  RegisterCustomerRequest,
+  RegisterCustomerResponse,
+  TokenPair,
+  UpdatePasswordRequest,
+} from '@velue/shared-models';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { environment } from '../../environments/environment';
@@ -178,27 +184,23 @@ export class AuthService {
 
   forgotPassword(email: string): Promise<{ message: string }> {
     return firstValueFrom(
-      this.http
-        .post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email })
-        .pipe(
-          catchError(error => {
-            console.error('Forgot password failed:', error);
-            return throwError(() => error);
-          }),
-        ),
+      this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email }).pipe(
+        catchError(error => {
+          console.error('Forgot password failed:', error);
+          return throwError(() => error);
+        }),
+      ),
     );
   }
 
   resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
     return firstValueFrom(
-      this.http
-        .post<{ message: string }>(`${this.baseUrl}/reset-password`, { token, newPassword })
-        .pipe(
-          catchError(error => {
-            console.error('Reset password failed:', error);
-            return throwError(() => error);
-          }),
-        ),
+      this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, { token, newPassword }).pipe(
+        catchError(error => {
+          console.error('Reset password failed:', error);
+          return throwError(() => error);
+        }),
+      ),
     );
   }
 
