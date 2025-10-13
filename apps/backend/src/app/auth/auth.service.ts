@@ -199,11 +199,14 @@ export class AuthService {
       },
     });
 
-    // Send confirmation email
-    await this.emailService.sendPasswordChangedEmail(
+    // Send confirmation email (fire-and-forget to avoid blocking HTTP response)
+    this.emailService.sendPasswordChangedEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
-    );
+    ).catch(error => {
+      console.error('[AuthService] Failed to send password changed email:', error);
+      // Don't throw - email failure shouldn't prevent password update success
+    });
   }
 
   async forgotPassword(email: string): Promise<void> {
@@ -231,12 +234,15 @@ export class AuthService {
       },
     });
 
-    // Send reset email
-    await this.emailService.sendPasswordResetEmail(
+    // Send reset email (fire-and-forget to avoid blocking HTTP response)
+    this.emailService.sendPasswordResetEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
       resetToken,
-    );
+    ).catch(error => {
+      console.error('[AuthService] Failed to send password reset email:', error);
+      // Don't throw - email failure shouldn't prevent reset token creation
+    });
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -279,10 +285,13 @@ export class AuthService {
       },
     });
 
-    // Send confirmation email
-    await this.emailService.sendPasswordChangedEmail(
+    // Send confirmation email (fire-and-forget to avoid blocking HTTP response)
+    this.emailService.sendPasswordChangedEmail(
       user.email,
       `${user.firstName} ${user.lastName}`,
-    );
+    ).catch(error => {
+      console.error('[AuthService] Failed to send password changed email:', error);
+      // Don't throw - email failure shouldn't prevent password reset success
+    });
   }
 }
