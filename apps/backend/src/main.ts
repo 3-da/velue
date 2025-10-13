@@ -12,14 +12,16 @@ async function bootstrap(): Promise<void> {
   app.use(cookieParser());
 
   // Global validation pipe for DTOs
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    transformOptions: {
-      enableImplicitConversion: true,
-    },
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -54,9 +56,10 @@ async function bootstrap(): Promise<void> {
   );
 
   // Enable CORS with credentials
-  const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? (process.env.FRONTEND_URL || '').split(',').filter(Boolean)
-    : ['http://localhost:4200'];
+  const allowedOrigins =
+    process.env.NODE_ENV === 'production'
+      ? (process.env.FRONTEND_URL || '').split(',').filter(Boolean)
+      : ['http://localhost:4200'];
 
   app.enableCors({
     origin: allowedOrigins,
