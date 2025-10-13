@@ -28,7 +28,7 @@ export class CookieService {
 
   /**
    * Helper to set cookie for cross-origin support
-   * Uses SameSite=None; Secure for production (cross-origin between Vercel & Railway)
+   * Uses SameSite=None; Secure; Partitioned for production (cross-origin between Vercel & Railway)
    */
   private setCookieWithPartitioned(
     res: Response,
@@ -45,11 +45,11 @@ export class CookieService {
       return;
     }
 
-    // Production: manually set cookie for cross-origin support (Safari/iOS compatible)
+    // Production: manually set cookie with Partitioned attribute for cross-origin support
     const maxAgeSeconds = Math.floor(options.maxAge / 1000);
     const httpOnlyFlag = options.httpOnly !== false ? '; HttpOnly' : '';
 
-    const cookieString = `${name}=${value}; Path=${options.path}; Max-Age=${maxAgeSeconds}; SameSite=None; Secure${httpOnlyFlag}`;
+    const cookieString = `${name}=${value}; Path=${options.path}; Max-Age=${maxAgeSeconds}; SameSite=None; Secure; Partitioned${httpOnlyFlag}`;
 
     res.append('Set-Cookie', cookieString);
   }
@@ -78,9 +78,17 @@ export class CookieService {
   }
 
   clearAuthCookies(res: Response): void {
-    res.clearCookie('access_token', { path: '/' });
-    res.clearCookie('refresh_token', { path: '/api/auth' });
-    res.clearCookie('auth_state', { path: '/' });
+    if (!this.isProduction) {
+      res.clearCookie('access_token', { path: '/' });
+      res.clearCookie('refresh_token', { path: '/api/auth' });
+      res.clearCookie('auth_state', { path: '/' });
+      return;
+    }
+
+    // Production: manually clear partitioned cookies
+    res.append('Set-Cookie', 'access_token=; Path=/; Max-Age=0; SameSite=None; Secure; Partitioned; HttpOnly');
+    res.append('Set-Cookie', 'refresh_token=; Path=/api/auth; Max-Age=0; SameSite=None; Secure; Partitioned; HttpOnly');
+    res.append('Set-Cookie', 'auth_state=; Path=/; Max-Age=0; SameSite=None; Secure; Partitioned');
   }
 
   getTokenFromCookies(req: Request): { accessToken?: string; refreshToken?: string } {
