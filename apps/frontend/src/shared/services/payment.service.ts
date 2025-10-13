@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export type PaymentProcessResult = {
   success: boolean;
@@ -15,7 +16,7 @@ export class PaymentService {
 
   processPaymentSuccess(sessionId: string): Observable<PaymentProcessResult> {
     return this.http.get<PaymentProcessResult>(
-      `http://localhost:3000/api/stripe/payment-success?session_id=${sessionId}`,
+      `${environment.apiUrl}/stripe/payment-success?session_id=${sessionId}`,
     );
   }
 }
