@@ -17,27 +17,36 @@ export class AuthService {
   private readonly userService = inject(UserService);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly isAuthenticatedSignal = signal<boolean>(this.checkAuthFromCookie());
+  // Frontend-owned flag in localStorage. Unlike the auth cookies (which live on
+  // the backend domain and are unreadable here), this survives a full page reload
+  // such as the round-trip to Stripe Checkout.
+  private readonly authFlagKey = 'velue_auth';
+
+  private readonly isAuthenticatedSignal = signal<boolean>(this.hasStoredAuthFlag());
   readonly isAuthenticated = this.isAuthenticatedSignal.asReadonly(); // Computed signal for public access
 
   constructor() {
-    if (this.isAuthenticated()) {
-      // Load user data in background, don't block app startup
-      setTimeout(() => {
-        this.userService
-          .getCurrentUser()
-          .pipe(takeUntilDestroyed(this.destroyRef))
-          .subscribe({
-            error: () => {
-              this.clearAuthData();
-            },
-          });
-      }, 0);
-    }
+    this.restoreSession();
   }
 
-  private checkAuthFromCookie(): boolean {
-    return document.cookie.includes('auth_state=authenticated');
+  private restoreSession(): void {
+    if (!this.hasStoredAuthFlag()) return;
+
+    // The httpOnly session cookies ride along on this cross-site request, so the
+    // backend is the source of truth for whether we're still logged in.
+    setTimeout(() => {
+      this.userService
+        .getCurrentUser()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.isAuthenticatedSignal.set(true),
+          error: () => this.clearAuthData(),
+        });
+    }, 0);
+  }
+
+  private hasStoredAuthFlag(): boolean {
+    return localStorage.getItem(this.authFlagKey) === '1';
   }
 
   private getErrorMessage(error: unknown): string {
@@ -75,7 +84,7 @@ export class AuthService {
   login(loginRequest: LoginRequest): Observable<TokenPair> {
     return this.http.post<TokenPair>(`${this.baseUrl}/login`, loginRequest).pipe(
       tap(async () => {
-        this.isAuthenticatedSignal.set(true);
+        this.markAuthenticated();
         try {
           await firstValueFrom(this.userService.getCurrentUser());
         } catch (error) {
@@ -96,7 +105,7 @@ export class AuthService {
       })
       .pipe(
         tap(async () => {
-          this.isAuthenticatedSignal.set(true);
+          this.markAuthenticated();
           try {
             await firstValueFrom(this.userService.getCurrentUser());
           } catch (error) {
@@ -202,7 +211,13 @@ export class AuthService {
     );
   }
 
+  private markAuthenticated(): void {
+    localStorage.setItem(this.authFlagKey, '1');
+    this.isAuthenticatedSignal.set(true);
+  }
+
   private clearAuthData(): void {
+    localStorage.removeItem(this.authFlagKey);
     this.isAuthenticatedSignal.set(false);
     this.userService.clearUser();
     void this.router.navigate(['/auth']);
