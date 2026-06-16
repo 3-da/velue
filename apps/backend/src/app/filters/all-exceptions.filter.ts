@@ -18,14 +18,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status: number;
-    let message: string | object;
+    let message: string;
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      const exceptionResponse = exception.getResponse();
-      message = typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : exceptionResponse;
+      message = this.extractMessage(exception.getResponse());
     } else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = 'Internal server error';
@@ -46,5 +43,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
     );
 
     response.status(status).json(errorResponse);
+  }
+
+  private extractMessage(exceptionResponse: string | object): string {
+    if (typeof exceptionResponse === 'string') {
+      return exceptionResponse;
+    }
+
+    const { message } = exceptionResponse as { message?: string | string[] };
+
+    if (Array.isArray(message)) {
+      return message.join(', ');
+    }
+
+    return message ?? 'An error occurred';
   }
 }

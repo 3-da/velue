@@ -21,7 +21,7 @@ import { MessageService } from 'primeng/api';
 import { BookingService } from '../../shared/services/booking.service';
 import { UserService } from '../../shared/services/user.service';
 import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
-import { HttpErrorResponse } from '@angular/common/http';
+import { extractHttpErrorMessage } from '../../shared/utils/http-error-message';
 
 @Component({
   selector: 'app-my-bookings',
@@ -179,15 +179,10 @@ export class MyBookingsComponent {
     } catch (error) {
       console.error('Cancellation failed:', error);
 
-      let errorMessage = 'Failed to cancel the booking. Please try again.';
-      if (error instanceof HttpErrorResponse) {
-        errorMessage = error.error?.message || error.message || errorMessage;
-      }
-
       this.messageService.add({
         severity: 'error',
         summary: 'Cancellation Failed',
-        detail: errorMessage,
+        detail: extractHttpErrorMessage(error, 'Failed to cancel the booking. Please try again.'),
       });
     }
   }
