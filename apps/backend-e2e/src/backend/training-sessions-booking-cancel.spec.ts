@@ -96,10 +96,7 @@ describe('Training Sessions Booking E2E - Cancel Booking', () => {
 
     const bookingResponse = await axios.post(
       '/api/booking',
-      {
-        trainingSessionId: sessionResponse.data.id,
-        userId,
-      },
+      { trainingSessionId: sessionResponse.data.id },
       {
         headers: { Authorization: `Bearer ${authToken}` },
       }

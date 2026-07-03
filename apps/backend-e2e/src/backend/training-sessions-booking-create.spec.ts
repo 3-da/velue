@@ -99,10 +99,7 @@ describe('Training Sessions Booking E2E - Create Booking', () => {
   it('should create a booking successfully', async () => {
     const response = await axios.post(
       '/api/booking',
-      {
-        trainingSessionId,
-        userId,
-      },
+      { trainingSessionId },
       {
         headers: { Authorization: `Bearer ${authToken}` },
       }
@@ -119,10 +116,7 @@ describe('Training Sessions Booking E2E - Create Booking', () => {
   it('should return 400 when trying to book the same session twice', async () => {
     await axios.post(
       '/api/booking',
-      {
-        trainingSessionId,
-        userId,
-      },
+      { trainingSessionId },
       {
         headers: { Authorization: `Bearer ${authToken}` },
       }
@@ -131,10 +125,7 @@ describe('Training Sessions Booking E2E - Create Booking', () => {
     try {
       await axios.post(
         '/api/booking',
-        {
-          trainingSessionId,
-          userId,
-        },
+        { trainingSessionId },
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }
@@ -159,10 +150,7 @@ describe('Training Sessions Booking E2E - Create Booking', () => {
     try {
       await axios.post(
         '/api/booking',
-        {
-          trainingSessionId,
-          userId,
-        },
+        { trainingSessionId },
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }
@@ -185,10 +173,7 @@ describe('Training Sessions Booking E2E - Create Booking', () => {
 
   it('should return 401 when not authenticated', async () => {
     try {
-      await axios.post('/api/booking', {
-        trainingSessionId,
-        userId,
-      });
+      await axios.post('/api/booking', { trainingSessionId });
       fail('Should have thrown an error');
     } catch (error) {
       const axiosError = error as AxiosError;
