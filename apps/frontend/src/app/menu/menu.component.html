@@ -27,7 +27,7 @@
         <div class="flex items-center gap-2 text-white">
 <!--          TODO : Replace Bitcoin icon with custom coins icon-->
           <i class="pi pi-bitcoin" style="font-size: 2rem;"></i>
-          <span class="font-semibold">{{ userService.getUserCoins() }}</span>
+          <span class="font-semibold" data-testid="user-coin-balance">{{ userService.getUserCoins() }}</span>
         </div>
 
         <p-avatar

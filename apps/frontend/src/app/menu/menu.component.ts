@@ -8,13 +8,13 @@ import { Menubar } from 'primeng/menubar';
 import { MenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Router } from '@angular/router';
-import { TrainingType } from '@velue/shared-data-access';
 import { Menu } from 'primeng/menu';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { ChangePasswordDialogComponent } from '../change-password-dialog/change-password-dialog.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-menu',
@@ -73,11 +73,11 @@ export class MenuComponent {
       icon: 'pi pi-lock',
       command: (): void => this.openChangePasswordDialog(),
     },
-    {
-      label: 'Email History',
-      icon: 'pi pi-envelope',
-      command: (): void => this.openEmailHistory(),
-    },
+    // The backend only serves stored demo emails outside production, so the
+    // page has nothing to show once deployed - keep it out of the menu there.
+    ...(environment.production
+      ? []
+      : [{ label: 'Email History', icon: 'pi pi-envelope', command: (): void => this.openEmailHistory() }]),
     {
       label: 'Delete Account',
       icon: 'pi pi-trash',
@@ -107,14 +107,6 @@ export class MenuComponent {
     return width < 640 ? 'normal' : 'large';
   });
   private readonly profileMenu = viewChild<Menu>('profileMenu');
-
-
-  private formatTrainingType(trainingType: TrainingType): string {
-    return trainingType
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  }
 
   protected navigateHome(): void {
     void this.router.navigate(['/']);

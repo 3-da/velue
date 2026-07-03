@@ -22,6 +22,12 @@ import { BookingService } from '../../shared/services/booking.service';
 import { UserService } from '../../shared/services/user.service';
 import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
 import { extractHttpErrorMessage } from '../../shared/utils/http-error-message';
+import {
+  findUserBookingId,
+  getSessionAvailabilityStatus,
+  getSessionStatusColor,
+  isActiveBooking,
+} from '../../shared/utils/session-booking.utils';
 
 @Component({
   selector: 'app-my-bookings',
@@ -64,10 +70,7 @@ export class MyBookingsComponent {
     if (!sessions || !user) return [];
 
     return sessions.filter(session =>
-      session.bookings.some(
-        booking => booking.userId === user.id &&
-                  (booking.status === 'PENDING' || booking.status === 'CONFIRMED')
-      )
+      session.bookings.some(booking => booking.userId === user.id && isActiveBooking(booking)),
     );
   });
 
@@ -114,40 +117,16 @@ export class MyBookingsComponent {
   }
 
   protected getStatusColor(session: TrainingSessionWithDetails): 'secondary' | 'success' | 'danger' {
-    switch (session.status) {
-      case 'SCHEDULED':
-        return 'success';
-      case 'COMPLETED':
-        return 'secondary';
-      case 'CANCELLED':
-        return 'danger';
-    }
+    return getSessionStatusColor(session);
   }
 
   protected getAvailabilityStatus(session: TrainingSessionWithDetails): 'success' | 'warn' | 'danger' {
-    const booked = session.bookings?.length || 0;
-    const capacity = session.maxParticipants;
-    const occupancyRate = booked / capacity;
-
-    if (occupancyRate <= 0.5) {
-      return 'success';
-    } else if (occupancyRate <= 0.8) {
-      return 'warn';
-    } else {
-      return 'danger';
-    }
+    return getSessionAvailabilityStatus(session);
   }
 
   protected getUserBookingId(session: TrainingSessionWithDetails): string | null {
     const user = this.userService.getCurrentUserSignal();
-    if (!user || !session.bookings) return null;
-
-    const booking = session.bookings.find(
-      userBooking =>
-        userBooking.userId === user.id && (userBooking.status === 'PENDING' || userBooking.status === 'CONFIRMED'),
-    );
-
-    return booking?.id || null;
+    return user ? findUserBookingId(session, user.id) : null;
   }
 
   private refreshData(): void {
@@ -177,8 +156,6 @@ export class MyBookingsComponent {
         detail: 'Your booking has been cancelled successfully!',
       });
     } catch (error) {
-      console.error('Cancellation failed:', error);
-
       this.messageService.add({
         severity: 'error',
         summary: 'Cancellation Failed',

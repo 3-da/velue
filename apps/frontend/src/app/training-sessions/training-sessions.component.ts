@@ -26,6 +26,13 @@ import { UserService } from '../../shared/services/user.service';
 import { PaymentService } from '../../shared/services/payment.service';
 import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
 import { extractHttpErrorMessage } from '../../shared/utils/http-error-message';
+import {
+  findUserBookingId,
+  getSessionAvailabilityStatus,
+  getSessionStatusColor,
+  hasUserBookedSession,
+  isSessionFull,
+} from '../../shared/utils/session-booking.utils';
 
 @Component({
   selector: 'app-training-sessions',
@@ -96,16 +103,19 @@ export class TrainingSessionsComponent {
   });
 
   private readonly _selectedTab = signal('');
+  private paymentProcessed = false;
 
-  // Payment processing effect
+  // Credit the coins once when returning from Stripe. The guard stops a re-emit
+  // of queryParams from processing the same session twice before navigation clears it.
   private readonly paymentEffect = effect(() => {
     const status = this.paymentStatus();
     const sessionId = this.sessionId();
 
-    if (status === 'success' && sessionId) {
-      this.processPaymentSuccess(sessionId);
-      this.clearQueryParams();
-    }
+    if (status !== 'success' || !sessionId || this.paymentProcessed) return;
+
+    this.paymentProcessed = true;
+    this.processPaymentSuccess(sessionId);
+    this.clearQueryParams();
   });
 
   protected readonly selectedTab = computed(() => {
@@ -157,54 +167,25 @@ export class TrainingSessionsComponent {
   }
 
   protected getStatusColor(session: TrainingSessionWithDetails): 'secondary' | 'success' | 'danger' {
-    switch (session.status) {
-      case 'SCHEDULED':
-        return 'success';
-      case 'COMPLETED':
-        return 'secondary';
-      case 'CANCELLED':
-        return 'danger';
-    }
+    return getSessionStatusColor(session);
   }
 
   protected getAvailabilityStatus(session: TrainingSessionWithDetails): 'success' | 'warn' | 'danger' {
-    const booked = session.bookings?.length || 0;
-    const capacity = session.maxParticipants;
-    const occupancyRate = booked / capacity;
-
-    if (occupancyRate <= 0.5) {
-      return 'success'; // Green - many spots available (≤50% full)
-    } else if (occupancyRate <= 0.8) {
-      return 'warn'; // Yellow - moderate availability (51-80% full)
-    } else {
-      return 'danger'; // Red - few spots left (>80% full)
-    }
+    return getSessionAvailabilityStatus(session);
   }
 
-  // TODO choose specific booking status
   protected isSessionFull(session: TrainingSessionWithDetails): boolean {
-    return session.bookings.length >= session.maxParticipants;
+    return isSessionFull(session);
   }
 
   protected hasUserBookedSession(session: TrainingSessionWithDetails): boolean {
     const user = this.userService.getCurrentUserSignal();
-    if (!user || !session.bookings) return false;
-
-    return session.bookings.some(
-      booking => booking.userId === user.id && (booking.status === 'PENDING' || booking.status === 'CONFIRMED'),
-    );
+    return user ? hasUserBookedSession(session, user.id) : false;
   }
 
   protected getUserBookingId(session: TrainingSessionWithDetails): string | null {
     const user = this.userService.getCurrentUserSignal();
-    if (!user || !session.bookings) return null;
-
-    const booking = session.bookings.find(
-      userBooking =>
-        userBooking.userId === user.id && (userBooking.status === 'PENDING' || userBooking.status === 'CONFIRMED'),
-    );
-
-    return booking?.id || null;
+    return user ? findUserBookingId(session, user.id) : null;
   }
 
   private refreshData(): void {
@@ -226,11 +207,9 @@ export class TrainingSessionsComponent {
     }
 
     try {
-      // Get current user to extract userId
-      const user = await firstValueFrom(this.userService.getCurrentUser());
-
-      // Create the booking
-      await firstValueFrom(this.bookingService.createBooking(trainingSessionId, user.id));
+      // The backend derives the booking owner from the auth token, so the
+      // client only needs to name the session.
+      await firstValueFrom(this.bookingService.createBooking(trainingSessionId));
 
       // Refresh data to update UI
       this.refreshData();
@@ -241,8 +220,6 @@ export class TrainingSessionsComponent {
         detail: `Your training session has been booked successfully!`,
       });
     } catch (error) {
-      console.error('Booking failed:', error);
-
       this.messageService.add({
         severity: 'error',
         summary: 'Booking Failed',
@@ -274,8 +251,6 @@ export class TrainingSessionsComponent {
         detail: 'Your booking has been cancelled successfully!',
       });
     } catch (error) {
-      console.error('Cancellation failed:', error);
-
       this.messageService.add({
         severity: 'error',
         summary: 'Cancellation Failed',

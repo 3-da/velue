@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, Signal, signal, WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, SecurityContext, Signal, signal, WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EmailData, EmailHistoryService } from '../../shared/services/email-history.service';
 import { CardModule } from 'primeng/card';
 import { DatePipe } from '@angular/common';
 import { Tag } from 'primeng/tag';
 import { Dialog } from 'primeng/dialog';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Button } from 'primeng/button';
 import { MessageService } from 'primeng/api';
 
@@ -29,10 +29,13 @@ export class EmailHistoryComponent {
   protected readonly selectedEmail = signal<EmailData | null>(null);
   protected readonly deleting = signal(false);
 
-  protected readonly sanitizedEmailContent = computed<SafeHtml | null>(() => {
+  // Strip scripts/event handlers rather than trusting the stored HTML outright.
+  // These are system-generated emails, but sanitizing keeps the viewer safe even
+  // if a malicious template ever reaches the table.
+  protected readonly sanitizedEmailContent = computed<string | null>(() => {
     const email = this.selectedEmail();
     if (!email) return null;
-    return this.sanitizer.bypassSecurityTrustHtml(email.htmlContent);
+    return this.sanitizer.sanitize(SecurityContext.HTML, email.htmlContent);
   });
 
   protected viewEmailContent(email: EmailData): void {

@@ -223,7 +223,7 @@ describe('TrainingSessionsComponent', () => {
 
       await component['bookSession']('session-1');
 
-      expect(bookingService.createBooking).toHaveBeenCalledWith('session-1', 'user-123');
+      expect(bookingService.createBooking).toHaveBeenCalledWith('session-1');
       expect(messageService.add).toHaveBeenCalledWith({
         severity: 'success',
         summary: 'Booking Confirmed',
