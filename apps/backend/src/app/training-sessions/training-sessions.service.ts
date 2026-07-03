@@ -34,33 +34,13 @@ export class TrainingSessionsService {
   findOne(id: string): Promise<TrainingSession | null> {
     return this.prisma.trainingSession.findUnique({
       where: { id },
-      include: {
-        trainer: includeTrainer,
-        bookings: {
-          include: {
-            customer: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                    email: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: includeTrainerAndBookings,
     });
   }
 
   findUpcoming(): Promise<TrainingSession[] | null> {
-    // TODO: Mock today's date for consistent testing - Remove this line when done testing
-    const today = new Date('2026-01-01');
-
-    // const today = new Date();
-    // today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const endDate = new Date(today);
     endDate.setDate(endDate.getDate() + 30);
@@ -85,32 +65,31 @@ export class TrainingSessionsService {
     });
   }
 
-  async canBeBooked(id: string): Promise<boolean> {
-    const session = await this.prisma.trainingSession.findUnique({
-      where: { id },
-      include: {
-        bookings: {
-          where: { status: { in: ['PENDING', 'CONFIRMED'] } },
-        },
-      },
-    });
-
-    if (!session) return false;
-    return session.status === 'SCHEDULED' && session.bookings.length < session.maxParticipants;
+  getSessionDateTime(date: Date, timeSlot: TrainingTimeSlot): Date {
+    const { hours, minutes } = this.parseSlotTime(timeSlot);
+    return this.berlinWallClockToUtc(date, hours, minutes);
   }
 
-  getSessionDateTime(date: Date, timeSlot: TrainingTimeSlot): Date {
-    const sessionDate = new Date(date);
-
-    const timeMatch = timeSlot.match(/SLOT_(\d{2})(\d{2})/); // Extract time from slot name (SLOT_0900 -> 09:00)
+  private parseSlotTime(timeSlot: TrainingTimeSlot): { hours: number; minutes: number } {
+    const timeMatch = timeSlot.match(/SLOT_(\d{2})(\d{2})/); // SLOT_0900 -> 09:00
     if (!timeMatch) {
       throw new Error(`Invalid time slot: ${timeSlot}`);
     }
+    return { hours: parseInt(timeMatch[1], 10), minutes: parseInt(timeMatch[2], 10) };
+  }
 
-    const hours = parseInt(timeMatch[1], 10);
-    const minutes = parseInt(timeMatch[2], 10);
+  // The session date is stored as UTC midnight (@db.Date) and the slot is a
+  // German wall-clock time. Anchoring the wall-clock to Europe/Berlin keeps the
+  // 24h cancellation window correct across the CET/CEST switch.
+  private berlinWallClockToUtc(date: Date, hours: number, minutes: number): Date {
+    const utcGuess = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours, minutes));
+    const offsetMinutes = this.berlinOffsetMinutes(utcGuess);
+    return new Date(utcGuess.getTime() - offsetMinutes * 60_000);
+  }
 
-    sessionDate.setHours(hours, minutes, 0, 0);
-    return sessionDate;
+  private berlinOffsetMinutes(instant: Date): number {
+    const berlin = new Date(instant.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
+    const utc = new Date(instant.toLocaleString('en-US', { timeZone: 'UTC' }));
+    return (berlin.getTime() - utc.getTime()) / 60_000;
   }
 }

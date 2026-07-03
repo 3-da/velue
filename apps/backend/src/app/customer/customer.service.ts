@@ -60,37 +60,4 @@ export class CustomerService {
     return customer?.coins || 0;
   }
 
-  async addCoins(userId: string, amount: number, tx?: Prisma.TransactionClient): Promise<void> {
-    const prisma = tx || this.prisma;
-
-    await prisma.customer.update({
-      where: { userId },
-      data: {
-        coins: {
-          increment: amount,
-        },
-      },
-    });
-  }
-
-  async deductCoins(userId: string, amount: number, tx?: Prisma.TransactionClient): Promise<void> {
-    const prisma = tx || this.prisma;
-
-    await prisma.customer.update({
-      where: { userId },
-      data: {
-        coins: {
-          decrement: amount,
-        },
-      },
-    });
-  }
-
-  async hasEnoughCoins(userId: string, requiredCoins: number): Promise<boolean> {
-    const customer = await this.prisma.customer.findUnique({
-      where: { userId },
-      select: { coins: true },
-    });
-    return customer?.coins >= requiredCoins;
-  }
 }

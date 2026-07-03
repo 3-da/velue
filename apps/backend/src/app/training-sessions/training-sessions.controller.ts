@@ -1,9 +1,13 @@
-import {Body, Controller, Get, Param, Patch} from '@nestjs/common';
+import {Body, Controller, Get, Param, Patch, UseGuards} from '@nestjs/common';
 import {TrainingSessionsService} from './training-sessions.service';
 import {UpdateTrainingSessionStatusDto} from './dto';
-import {TrainingSession} from '@velue/shared-data-access';
+import {TrainingSession, UserRole} from '@velue/shared-data-access';
+import {JwtAuthGuard} from '../auth/guards/jwt-auth.guard';
+import {UserRoleGuard} from '../auth/guards/user-role.guard';
+import {Roles} from '../auth/decorators/roles.decorator';
 
 @Controller('training-sessions')
+@UseGuards(JwtAuthGuard)
 export class TrainingSessionsController {
   constructor(private readonly trainingSessionsService: TrainingSessionsService) {}
 
@@ -18,6 +22,8 @@ export class TrainingSessionsController {
   }
 
   @Patch(':id')
+  @UseGuards(UserRoleGuard)
+  @Roles(UserRole.TRAINER, UserRole.ADMIN)
   updateOne(@Param('id') id: string, @Body() updateDto: UpdateTrainingSessionStatusDto): Promise<TrainingSession> {
     return this.trainingSessionsService.updateOne(id, updateDto);
   }
