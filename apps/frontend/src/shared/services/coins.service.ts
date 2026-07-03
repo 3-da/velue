@@ -15,10 +15,12 @@ export class CoinsService {
     return this.http.get<CoinsPackageResponse[]>(this.baseUrl, { withCredentials: true });
   }
 
-  createStripeCheckoutSession(priceId: string, userId: string): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>(`${environment.apiUrl}/stripe/create-checkout-session`, {
-      priceId,
-      userId
-    }, { withCredentials: true });
+  createStripeCheckoutSession(priceId: string): Observable<{ url: string }> {
+    // The backend derives the buyer from the auth cookie, so only the price is sent.
+    return this.http.post<{ url: string }>(
+      `${environment.apiUrl}/stripe/create-checkout-session`,
+      { priceId },
+      { withCredentials: true },
+    );
   }
 }

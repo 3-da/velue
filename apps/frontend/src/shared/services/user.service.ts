@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserResponse } from '@velue/shared-models';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -11,15 +11,15 @@ export class UserService {
   private readonly baseUrl = `${environment.apiUrl}/user`;
   private readonly http = inject(HttpClient);
 
-  private readonly currentUserSignal = signal<UserWithAllRoles | null>(null);
+  private readonly currentUserSignal = signal<UserResponse | null>(null);
 
-  getCurrentUser(): Observable<UserWithAllRoles> {
+  getCurrentUser(): Observable<UserResponse> {
     return this.http
-      .get<UserWithAllRoles>(`${this.baseUrl}/me`, { withCredentials: true })
+      .get<UserResponse>(`${this.baseUrl}/me`, { withCredentials: true })
       .pipe(tap(user => this.currentUserSignal.set(user)));
   }
 
-  getCurrentUserSignal(): UserWithAllRoles | null {
+  getCurrentUserSignal(): UserResponse | null {
     return this.currentUserSignal();
   }
 

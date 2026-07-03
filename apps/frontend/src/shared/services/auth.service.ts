@@ -1,11 +1,12 @@
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, firstValueFrom, Observable, tap, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { catchError, finalize, firstValueFrom, Observable, shareReplay, tap, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LoginRequest, RegisterCustomerRequest, RegisterCustomerResponse, TokenPair, UpdatePasswordRequest } from '@velue/shared-models';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { environment } from '../../environments/environment';
+import { extractHttpErrorMessage } from '../utils/http-error-message';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +25,9 @@ export class AuthService {
 
   private readonly isAuthenticatedSignal = signal<boolean>(this.hasStoredAuthFlag());
   readonly isAuthenticated = this.isAuthenticatedSignal.asReadonly(); // Computed signal for public access
+
+  // Shared in-flight refresh so a burst of 401s triggers exactly one /auth/refresh.
+  private refreshInFlight$: Observable<{ message: string }> | null = null;
 
   constructor() {
     this.restoreSession();
@@ -49,34 +53,13 @@ export class AuthService {
     return localStorage.getItem(this.authFlagKey) === '1';
   }
 
-  private getErrorMessage(error: unknown): string {
-    if (error instanceof HttpErrorResponse) {
-      // Handle different error response formats
-      if (typeof error.error === 'string') {
-        return error.error;
-      }
-      if (error.error && typeof error.error.message === 'string') {
-        return error.error.message;
-      }
-      if (error.error && typeof error.error.error === 'string') {
-        return error.error.error;
-      }
-      return error.message || 'An error occurred';
-    }
-    if (error instanceof Error) {
-      return error.message;
-    }
-    return 'An unexpected error occurred';
-  }
-
   async loginWithNavigation(loginRequest: LoginRequest): Promise<{ success: boolean; message?: string }> {
     try {
       await firstValueFrom(this.login(loginRequest));
       await this.router.navigate(['/training-sessions']);
       return { success: true };
     } catch (error: unknown) {
-      console.error('Login failed:', error);
-      const message = this.getErrorMessage(error) || 'Login failed. Please check your credentials.';
+      const message = extractHttpErrorMessage(error, 'Login failed. Please check your credentials.');
       return { success: false, message };
     }
   }
@@ -127,10 +110,21 @@ export class AuthService {
       await this.router.navigate(['/training-sessions']);
       return { success: true };
     } catch (error: unknown) {
-      console.error('Registration failed:', error);
-      const message = this.getErrorMessage(error) || 'Registration failed. Please try again.';
+      const message = extractHttpErrorMessage(error, 'Registration failed. Please try again.');
       return { success: false, message };
     }
+  }
+
+  // The interceptor calls this so concurrent 401s share a single refresh request
+  // instead of each firing their own. Cleared on completion for the next cycle.
+  refreshTokenShared(): Observable<{ message: string }> {
+    if (this.refreshInFlight$) return this.refreshInFlight$;
+
+    this.refreshInFlight$ = this.refreshToken().pipe(
+      finalize(() => (this.refreshInFlight$ = null)),
+      shareReplay(1),
+    );
+    return this.refreshInFlight$;
   }
 
   refreshToken(): Observable<{ message: string }> {

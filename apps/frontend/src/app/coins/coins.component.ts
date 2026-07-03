@@ -45,8 +45,6 @@ export class CoinsComponent implements OnInit {
   }
 
   purchaseCoins(coinsPackage: CoinsPackageResponse): void {
-    console.log('Purchasing coins package:', coinsPackage);
-
     if (!this.authService.isAuthenticated()) {
       this.messageService.add({
         severity: 'warn',
@@ -67,7 +65,7 @@ export class CoinsComponent implements OnInit {
     }
 
     this.coinsService
-      .createStripeCheckoutSession(coinsPackage.stripePriceId, currentUser.id)
+      .createStripeCheckoutSession(coinsPackage.stripePriceId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: response => {

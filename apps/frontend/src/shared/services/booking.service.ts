@@ -11,8 +11,8 @@ export class BookingService {
   private readonly baseUrl = `${environment.apiUrl}/booking`;
   private readonly http = inject(HttpClient);
 
-  createBooking(trainingSessionId: string, userId: string): Observable<BookingResponse> {
-    const payload: CreateBookingRequest = { trainingSessionId, userId };
+  createBooking(trainingSessionId: string): Observable<BookingResponse> {
+    const payload: CreateBookingRequest = { trainingSessionId };
     return this.http
       .post<BookingResponse>(this.baseUrl, payload, {
         withCredentials: true,

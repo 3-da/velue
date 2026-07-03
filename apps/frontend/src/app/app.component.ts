@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MenuComponent } from './menu/menu.component';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from '../shared/services/auth.service';
-import { UserService } from '../shared/services/user.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   imports: [RouterModule, MenuComponent, ToastModule],
@@ -15,15 +12,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class AppComponent implements OnInit {
   protected readonly title = 'Velué';
-  private authService = inject(AuthService);
-  private userService = inject(UserService);
-  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
+    // AuthService restores the session (and fetches the user) on construction,
+    // so this only needs to set the theme.
     document.documentElement.classList.add('dark-mode');
-
-    if (this.authService.isAuthenticated()) {
-      this.userService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-    }
   }
 }
