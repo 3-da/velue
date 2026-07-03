@@ -21,11 +21,11 @@ Object.defineProperty(window, 'matchMedia', {
     matches: false,
     media: query,
     onchange: null,
-    addListener: () => {}, // Deprecated
-    removeListener: () => {}, // Deprecated
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => true,
+    addListener: (): void => {}, // Deprecated
+    removeListener: (): void => {}, // Deprecated
+    addEventListener: (): void => {},
+    removeEventListener: (): void => {},
+    dispatchEvent: (): boolean => true,
   }),
 });
 
@@ -33,7 +33,7 @@ Object.defineProperty(window, 'matchMedia', {
 Object.defineProperty(window, 'getComputedStyle', {
   writable: true,
   value: () => ({
-    getPropertyValue: () => '',
+    getPropertyValue: (): string => '',
   }),
 });
 

@@ -57,6 +57,7 @@ vitest.config.*.timestamp*
 .env.production
 .env.test
 .env.staging
+!.env.example
 
 # Database
 *.db
@@ -67,3 +68,4 @@ vitest.config.*.timestamp*
 .claude/
 CLAUDE.md
 ANGULAR_GUIDELINES.md
+.vercel

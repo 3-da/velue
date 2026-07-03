@@ -744,58 +744,61 @@ You'll need to create free accounts for:
 
 ### Base URL
 
-**Development**: `http://localhost:3000`
-**Production** (Planned): `https://api.velue.de`
+All routes are served under the global `/api` prefix.
+
+**Development**: `http://localhost:3000/api`
+**Production** (Planned): `https://api.velue.de/api`
 
 ### Main Endpoints
 
 #### Authentication
 
 ```http
-POST /auth/register
-POST /auth/login
-POST /auth/refresh
-POST /auth/logout
-PUT  /auth/update-password
-POST /auth/forgot-password
-POST /auth/reset-password
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/logout
+PUT  /api/auth/update-password
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
 ```
 
 #### Training Sessions
 
 ```http
-GET  /training-sessions/upcoming       # Get all upcoming sessions
-GET  /training-sessions/:id            # Get session by ID
-PATCH /training-sessions/:id           # Update session status
+GET   /api/training-sessions/upcoming  # Get all upcoming sessions
+GET   /api/training-sessions/:id       # Get session by ID
+PATCH /api/training-sessions/:id       # Update session status
 ```
 
 #### Bookings
 
 ```http
-POST   /booking                        # Create booking
-DELETE /booking/:id                    # Cancel booking
+POST   /api/booking                    # Create booking
+DELETE /api/booking/:id                # Cancel booking
 ```
 
 #### Credits
 
 ```http
-GET  /coins                            # Get available credit packages
-POST /coins/buy                        # Purchase credits
+GET /api/coins                         # Get available credit packages
 ```
+
+Credit purchases are initiated through the Stripe endpoints below, not a dedicated credits route.
 
 #### Customer Profile
 
 ```http
-GET /customer/:id                      # Get customer profile
-GET /customer/:id/profile              # Get customer profile details
-GET /customer/:id/coins                # Get coin balance
+GET /api/customer/:id                  # Get customer profile
+GET /api/customer/:id/profile          # Get customer profile details
+GET /api/customer/:id/coins            # Get coin balance
 ```
 
 #### Stripe Integration
 
 ```http
-POST /stripe/create-checkout-session   # Create Stripe Checkout
-GET  /stripe/payment-success           # Handle payment callback
+POST /api/stripe/create-checkout-session   # Create Stripe Checkout
+GET  /api/stripe/payment-success           # Handle payment callback
 ```
 
 ### Authentication

@@ -19,14 +19,14 @@
 3. **Access your applications:**
    - **Frontend (Angular):** http://localhost:4200
    - **Backend (NestJS):** http://localhost:3000
-   - **PostgreSQL:** localhost:5432
+   - **PostgreSQL:** localhost:5433
    - **Prisma Studio:** Run `nx run shared-data-access:db-studio`
 
 ## Services
 
 ### PostgreSQL 17
 - **Container:** `velue-postgres`
-- **Port:** 5432
+- **Port:** 5433
 - **Database:** `velue_db`
 - **User:** `velue_user`
 - **Password:** `velue_password`
@@ -57,11 +57,11 @@ docker-compose ps
 
 ### From Host Machine
 - **Host:** localhost
-- **Port:** 5432
+- **Port:** 5433
 - **Database:** velue_db
 - **Username:** velue_user
 - **Password:** velue_password
-- **Connection String:** `postgresql://velue_user:velue_password@localhost:5432/velue_db`
+- **Connection String:** `postgresql://velue_user:velue_password@localhost:5433/velue_db`
 
 ## Development Workflow
 
