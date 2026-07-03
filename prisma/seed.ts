@@ -262,8 +262,10 @@ async function createAdmins(adminCount: number): Promise<BaseUser[]> {
   return admins;
 }
 
+const SESSION_WINDOW_DAYS = 45; // Comfortably covers findUpcoming()'s 30-day window regardless of seed date.
+
 async function createTrainingSessions(trainers: BaseUser[]): Promise<number> {
-  console.log('Creating training sessions for January 2026...');
+  console.log(`Creating training sessions for the next ${SESSION_WINDOW_DAYS} days...`);
 
   // 7 daily time slots with training types
   const dailySchedule = [
@@ -283,10 +285,14 @@ async function createTrainingSessions(trainers: BaseUser[]): Promise<number> {
   ];
 
   let sessionCount = 0;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
 
-  // Generate sessions for January 2026
-  for (let day = 1; day <= 31; day++) {
-    const date = new Date(`2026-01-${String(day).padStart(2, '0')}T00:00:00.000Z`);
+  // Sessions are generated relative to seed time (not a fixed calendar month) so the
+  // upcoming-sessions list is never empty, no matter when this script runs.
+  for (let dayOffset = 0; dayOffset < SESSION_WINDOW_DAYS; dayOffset++) {
+    const date = new Date(today);
+    date.setUTCDate(date.getUTCDate() + dayOffset);
 
     for (const schedule of dailySchedule) {
       const randomTrainer = trainers[Math.floor(Math.random() * trainers.length)];
@@ -300,17 +306,14 @@ async function createTrainingSessions(trainers: BaseUser[]): Promise<number> {
           durationMinutes: TRAINING_SESSION.durationMinutes,
           maxParticipants: TRAINING_SESSION.maxParticipants,
           coinsRequired: TRAINING_SESSION.coinsRequired,
-          qrCode: `QR-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(
-            2,
-            '0',
-          )}-${schedule.time}`,
+          qrCode: `QR-${date.toISOString().slice(0, 10)}-${schedule.time}`,
         },
       });
       sessionCount++;
     }
   }
 
-  console.log(`✅ Created ${sessionCount} training sessions for January 2026`);
+  console.log(`✅ Created ${sessionCount} training sessions`);
   return sessionCount;
 }
 
@@ -366,10 +369,7 @@ async function createRandomBookings(customers: BaseUser[]): Promise<number> {
               trainingSessionId: session.id,
               status: 'CONFIRMED',
               coinsUsed: session.coinsRequired,
-              bookedAt: faker.date.between({
-                from: new Date('2026-12-01'),
-                to: new Date('2026-12-31'),
-              }),
+              bookedAt: faker.date.recent({ days: 14 }), // Booked within the last two weeks, regardless of session date.
             },
           });
           bookingCount++;

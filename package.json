@@ -10,7 +10,7 @@
     "db:studio": "prisma studio"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "ts-node --project prisma/tsconfig.seed.json -r tsconfig-paths/register prisma/seed.ts"
   },
   "private": true,
   "dependencies": {
@@ -37,7 +37,7 @@
     "@types/nodemailer": "^7.0.2",
     "@types/stripe": "^8.0.416",
     "argon2": "^0.44.0",
-    "axios": "^1.6.0",
+    "axios": "1.12.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
@@ -112,6 +112,7 @@
     "prettier": "^2.6.2",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "tslib": "^2.3.0",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.29.0",
