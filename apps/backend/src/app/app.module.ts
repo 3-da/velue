@@ -23,6 +23,12 @@ import { EmailModule } from './email/email.module';
     AuthModule,
     UserModule,
     ThrottlerModule.forRoot({
+      // Rate limiting protects the real, internet-facing deployment from
+      // credential stuffing and abuse. It has no equivalent value against a
+      // local backend, and its per-IP tracking (not per-account) makes it
+      // actively hostile to e2e suites that register multiple test accounts
+      // in quick succession.
+      skipIf: () => process.env.NODE_ENV !== 'production',
       throttlers: [
         {
           name: 'short',

@@ -5,6 +5,9 @@ describe('GET /api', () => {
     const res = await axios.get(`/api`);
 
     expect(res.status).toBe(200);
-    expect(res.data).toEqual({ message: 'Hello API' });
+    expect(res.data).toEqual({
+      message: 'Velué API',
+      endpoints: ['/api/health', '/api/auth', '/api/user', '/api/coins', '/api/training-sessions'],
+    });
   });
 });
