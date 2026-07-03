@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
@@ -13,6 +13,7 @@ export type EmailData = {
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
   private readonly emailStore: EmailData[] = [];
   private readonly isProduction: boolean;
   private readonly transporter: Transporter | null = null;
@@ -39,9 +40,9 @@ export class EmailService {
           pass: smtpPass,
         },
       });
-      console.log('[EmailService] Nodemailer configured successfully');
+      this.logger.log('Nodemailer configured successfully');
     } else {
-      console.log('[EmailService] Nodemailer not configured - emails will be stored in memory');
+      this.logger.warn('Nodemailer not configured - emails will be stored in memory');
     }
   }
 
@@ -60,15 +61,15 @@ export class EmailService {
     // Check if demo account - store in memory instead of sending
     if (this.demoAccounts.includes(to)) {
       this.emailStore.push(emailData);
-      console.log(`[EmailService] Demo account detected: Email stored. View at /api/dev/emails`);
-      console.log(`[EmailService] To: ${to} | Subject: ${subject}`);
+      this.logger.log(`Demo account detected: email stored. View at /api/dev/emails (to: ${to} | subject: ${subject})`);
       return;
     }
 
     // Real accounts MUST have SMTP configured
     if (!this.transporter) {
-      const errorMsg = `[EmailService] CRITICAL: Cannot send email to real account without SMTP configuration. Please configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS in .env file.`;
-      console.error(errorMsg);
+      this.logger.error(
+        'Cannot send email to real account without SMTP configuration. Configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS.',
+      );
       throw new Error('Email service not configured. Please contact administrator.');
     }
 
@@ -81,9 +82,9 @@ export class EmailService {
         html: emailData.htmlContent,
         text: emailData.textContent,
       });
-      console.log(`[EmailService] ✅ Real email sent successfully to ${to}`);
+      this.logger.log(`Real email sent successfully to ${to}`);
     } catch (error) {
-      console.error('[EmailService] ❌ Failed to send email:', error);
+      this.logger.error('Failed to send email', error instanceof Error ? error.stack : String(error));
       throw new Error('Failed to send email. Please try again later.');
     }
   }

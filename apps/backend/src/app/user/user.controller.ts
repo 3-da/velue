@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../auth/decorators/user.decorator';
 import { UserWithAllRoles } from '@velue/shared-models';
 import { UserService } from './user.service';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Controller('user')
 export class UserController {
@@ -10,8 +11,8 @@ export class UserController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getMe(@User() user: UserWithAllRoles): UserWithAllRoles {
-    return user;
+  getMe(@User() user: UserWithAllRoles): UserResponseDto {
+    return new UserResponseDto(user);
   }
 
   @Delete('me')

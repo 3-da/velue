@@ -42,7 +42,4 @@ export class UserService {
       where: { id: userId },
     });
   }
-
-  // TODO: Add password reset functionality
-  // async updatePassword(userId: string, hashedPassword: string): Promise<void>
 }
