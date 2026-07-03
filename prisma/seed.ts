@@ -346,10 +346,13 @@ async function createRandomBookings(customers: BaseUser[]): Promise<number> {
   let bookingCount = 0;
 
   for (const session of trainingSessions) {
-    // Randomly determine how many spots to book (0% to 100% capacity)
+    // Randomly determine how many spots to book (0 to maxParticipants, inclusive).
+    // Math.random() never returns 1, so multiplying by maxParticipants alone can
+    // never reach full capacity - multiply by maxParticipants + 1 instead so a
+    // session can land at exactly maxParticipants and demonstrate the Full state.
     const maxParticipants = session.maxParticipants;
     const occupancyRate = Math.random(); // 0 to 1
-    const spotsToBook = Math.floor(occupancyRate * maxParticipants);
+    const spotsToBook = Math.floor(occupancyRate * (maxParticipants + 1));
 
     if (spotsToBook > 0) {
       // Select random customers for this session

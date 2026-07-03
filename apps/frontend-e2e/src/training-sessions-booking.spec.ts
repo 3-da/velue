@@ -1,9 +1,16 @@
-import { expect, test, type BrowserContext } from '@playwright/test';
+import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test';
+import { PrismaClient } from '@velue/shared-data-access';
 
 const API_URL = process.env['API_URL'] || 'http://localhost:3000/api';
 const TEST_CUSTOMER = { email: 'test-customer@velue.de', password: 'Customer2024!' };
+const prisma = new PrismaClient();
 
-type UpcomingSession = { id: string; bookings: unknown[]; maxParticipants: number };
+type UpcomingSession = {
+  id: string;
+  date: string;
+  bookings: { userId: string; status: string }[];
+  maxParticipants: number;
+};
 
 // Logs in against the real backend and primes the frontend's auth flag. The route
 // is guarded and the backend only trusts real signed JWTs in real cookie names, so
@@ -13,19 +20,90 @@ async function loginAsSeededCustomer(context: BrowserContext): Promise<void> {
   await context.request.post(`${API_URL}/auth/login`, { data: TEST_CUSTOMER });
 }
 
+function isActiveBooking(booking: { status: string }): boolean {
+  return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+}
+
+// A booking on a same-day (or near-term) session is real but not cancellable -
+// the backend enforces a 24h advance-notice window. Use a comfortable buffer so
+// even the earliest time slot on the picked date is safely past that cutoff.
+function isSafelyCancellable(session: UpcomingSession): boolean {
+  const hoursUntil = (new Date(session.date).getTime() - Date.now()) / (1000 * 60 * 60);
+  return hoursUntil > 48;
+}
+
 // The demo seed books random customers into random sessions, so the test account
 // isn't guaranteed to already have a booking of its own. Book one directly so the
-// cancel-flow test has something to find.
+// cancel-flow test has something to find - skipping any session this account has
+// already booked (e.g. from the "should successfully book" test earlier in this
+// same run), since re-booking it would 400 with "Already booked".
 async function ensureActiveBooking(context: BrowserContext): Promise<void> {
+  const me = await (await context.request.get(`${API_URL}/user/me`)).json();
+
   const upcoming = await context.request.get(`${API_URL}/training-sessions/upcoming`);
   const sessions: UpcomingSession[] = await upcoming.json();
-  const bookable = sessions.find(session => session.bookings.length < session.maxParticipants);
-  if (bookable) {
-    await context.request.post(`${API_URL}/booking`, { data: { trainingSessionId: bookable.id } });
+
+  const alreadyHasSafeBooking = sessions.some(
+    session =>
+      isSafelyCancellable(session) &&
+      session.bookings.some(booking => booking.userId === me.id && isActiveBooking(booking)),
+  );
+  if (alreadyHasSafeBooking) return;
+
+  const bookable = sessions.find(session => isSafelyCancellable(session) && session.bookings.length < session.maxParticipants);
+  if (!bookable) throw new Error('No bookable, safely-cancellable session available to set up the cancel-flow fixture');
+
+  const response = await context.request.post(`${API_URL}/booking`, { data: { trainingSessionId: bookable.id } });
+  if (!response.ok()) {
+    throw new Error(`Failed to create booking fixture: ${response.status()} ${await response.text()}`);
   }
 }
 
+// The page only renders one date tab's sessions at a time and defaults to
+// today's. Seed occupancy is randomized per session, so today's handful of
+// slots can legitimately all be full (or none full) - search every tab
+// instead of assuming the default one has what the test needs.
+//
+// Returns a position-anchored locator (cards.nth(i)), not a filtered one: a
+// filter like "has an enabled book button" stops matching the instant the
+// test's own click makes that condition false, which breaks re-querying the
+// same card for a follow-up assertion (e.g. checking it now shows Cancel).
+async function findSessionAcrossTabs(page: Page, matches: (card: Locator) => Promise<boolean>): Promise<Locator> {
+  const tabs = page.getByRole('tab');
+  const tabCount = await tabs.count();
+
+  for (let tabIndex = 0; tabIndex < tabCount; tabIndex++) {
+    if (tabIndex > 0) await tabs.nth(tabIndex).click();
+
+    const cards = page.locator('[data-testid="training-session-card"]');
+    const cardCount = await cards.count();
+    for (let i = 0; i < cardCount; i++) {
+      if (await matches(cards.nth(i))) return cards.nth(i);
+    }
+  }
+
+  throw new Error('No matching session found across any date tab');
+}
+
+async function hasEnabledBookButton(card: Locator): Promise<boolean> {
+  return (await card.locator('[data-testid="book-session-btn"]:not([disabled])').count()) > 0;
+}
+
 test.describe('Training Sessions Booking Flow', () => {
+  // This suite books real sessions through the real UI, and the seeded demo
+  // account has no other way to earn coins (buying more goes through Stripe) -
+  // top it up once so repeated runs against the same account don't exhaust it.
+  test.beforeAll(async () => {
+    await prisma.customer.updateMany({
+      where: { user: { email: TEST_CUSTOMER.email } },
+      data: { coins: 1000 },
+    });
+  });
+
+  test.afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   test.beforeEach(async ({ page, context }) => {
     await loginAsSeededCustomer(context);
     await page.goto('/training-sessions');
@@ -52,10 +130,7 @@ test.describe('Training Sessions Booking Flow', () => {
   });
 
   test('should successfully book a training session', async ({ page }) => {
-    const availableSession = page
-      .locator('[data-testid="training-session-card"]')
-      .filter({ has: page.locator('[data-testid="book-session-btn"]:not([disabled])') })
-      .first();
+    const availableSession = await findSessionAcrossTabs(page, hasEnabledBookButton);
 
     await availableSession.locator('[data-testid="book-session-btn"]').click();
 
@@ -76,10 +151,10 @@ test.describe('Training Sessions Booking Flow', () => {
     await ensureActiveBooking(context);
     await page.goto('/training-sessions');
 
-    const bookedSession = page
-      .locator('[data-testid="training-session-card"]')
-      .filter({ has: page.locator('[data-testid="cancel-booking-btn"]') })
-      .first();
+    const bookedSession = await findSessionAcrossTabs(
+      page,
+      async card => (await card.locator('[data-testid="cancel-booking-btn"]').count()) > 0,
+    );
 
     await bookedSession.locator('[data-testid="cancel-booking-btn"]').click();
 
@@ -97,13 +172,20 @@ test.describe('Training Sessions Booking Flow', () => {
   test.skip('should show error when canceling booking less than 24 hours before session', () => {});
 
   test('should disable book button when session is full', async ({ page }) => {
-    const fullSession = page.locator('[data-testid="training-session-card"]').filter({
-      hasText: /0 spots remaining|Full/,
-    }).first();
+    // "Full" isn't literal text anywhere in the UI - the status badge shows the
+    // session's SCHEDULED/COMPLETED/CANCELLED state, not availability. A full
+    // session is one whose book button isSessionFull() has disabled and whose
+    // spots counter reads e.g. "30/30".
+    const fullSession = await findSessionAcrossTabs(page, async card =>
+      card.locator('[data-testid="book-session-btn"]').isDisabled(),
+    );
 
     await expect(fullSession).toBeVisible();
     await expect(fullSession.locator('[data-testid="book-session-btn"]')).toBeDisabled();
-    await expect(fullSession.locator('[data-testid="session-status-badge"]')).toContainText('Full');
+
+    const spotsText = await fullSession.locator('[data-testid="session-spots"]').textContent();
+    const [booked, capacity] = (spotsText?.match(/\d+/g) ?? []).map(Number);
+    expect(booked).toBe(capacity);
   });
 
   // The training-type filter UI hasn't been built yet.
@@ -123,10 +205,7 @@ test.describe('Training Sessions Booking Flow', () => {
     await expect(coinBalance).toBeVisible();
     const initialCoins = parseInt((await coinBalance.textContent())?.match(/\d+/)?.[0] || '0', 10);
 
-    const availableSession = page
-      .locator('[data-testid="training-session-card"]')
-      .filter({ has: page.locator('[data-testid="book-session-btn"]:not([disabled])') })
-      .first();
+    const availableSession = await findSessionAcrossTabs(page, hasEnabledBookButton);
     await availableSession.locator('[data-testid="book-session-btn"]').click();
     await expect(page.locator('.p-toast-message-success')).toBeVisible();
 

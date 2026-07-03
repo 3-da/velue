@@ -16,6 +16,10 @@ const baseURL = process.env['BASE_URL'] || 'http://localhost:4200';
  */
 export default defineConfig({
   ...nxE2EPreset(__filename, { testDir: './src' }),
+  // Specs share one seeded account across all three browser projects (no
+  // per-browser test users), so two projects booking/cancelling concurrently
+  // race each other's data. Serial execution trades speed for determinism.
+  workers: 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
