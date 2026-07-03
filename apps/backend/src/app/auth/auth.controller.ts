@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -42,7 +42,7 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<{ message: string }> {
     const { refreshToken } = this.cookieService.getTokenFromCookies(req);
     if (!refreshToken) {
-      throw new Error('No refresh token found');
+      throw new UnauthorizedException('No refresh token provided');
     }
 
     const tokens = await this.authService.refreshToken({ refreshToken });

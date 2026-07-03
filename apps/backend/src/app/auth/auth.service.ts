@@ -114,6 +114,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     await this.userService.updateLastLogin(user.id);
 
     return this.jwtService.generateTokenPair({
@@ -125,7 +129,15 @@ export class AuthService {
 
   async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<TokenPair> {
     const { refreshToken } = refreshTokenDto;
-    return this.jwtService.refreshAccessToken(refreshToken);
+    const decoded = await this.jwtService.decodeRefreshToken(refreshToken);
+
+    const user = await this.userService.findById(decoded.sub);
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    this.jwtService.rotateRefreshToken(refreshToken, decoded.exp);
+    return this.jwtService.generateTokenPair({ id: user.id, email: user.email, role: user.role });
   }
 
   async validateUser(email: string, password: string): Promise<UserWithAllRoles | null> {
@@ -141,7 +153,6 @@ export class AuthService {
       return null;
     }
 
-    await this.userService.updateLastLogin(user.id);
     return user;
   }
 

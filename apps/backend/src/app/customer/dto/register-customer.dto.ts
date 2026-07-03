@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsEmail, IsOptional, IsPhoneNumber, IsString, MaxLength, MinLength } from 'class-validator';
+import { Equals, IsBoolean, IsDateString, IsEmail, IsOptional, IsPhoneNumber, IsString, MaxLength, MinLength } from 'class-validator';
 import { PASSWORD_VALIDATION } from '@velue/shared-constants';
 import { RegisterCustomerRequest } from '@velue/shared-models';
 
@@ -32,10 +32,10 @@ export class RegisterCustomerDto implements RegisterCustomerRequest {
   @IsString()
   emergencyContact?: string;
 
-  @IsBoolean()
+  @Equals(true, { message: 'You must accept the Terms of Service' })
   acceptsTerms: boolean;
 
-  @IsBoolean()
+  @Equals(true, { message: 'You must accept the Privacy Policy' })
   acceptsPrivacy: boolean;
 
   @IsBoolean()

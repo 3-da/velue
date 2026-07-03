@@ -12,6 +12,7 @@ describe('AuthService', () => {
 
   const mockUserService = {
     findByEmail: jest.fn(),
+    findById: jest.fn(),
     updateLastLogin: jest.fn(),
   };
 
@@ -40,7 +41,8 @@ describe('AuthService', () => {
 
   const mockJwtService = {
     generateTokenPair: jest.fn(),
-    refreshAccessToken: jest.fn(),
+    decodeRefreshToken: jest.fn(),
+    rotateRefreshToken: jest.fn(),
     revokeRefreshToken: jest.fn(),
   };
 
@@ -56,6 +58,8 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks(); // The mock objects above are shared across every test in this file.
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -91,5 +95,49 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('refreshToken', () => {
+    const refreshToken = 'valid-refresh-token';
+    const decoded = { sub: 'user-123', email: 'user@example.com', role: 'CUSTOMER', exp: 1893456000 };
+
+    it('should rotate the token and issue a new pair for an active user', async () => {
+      mockJwtService.decodeRefreshToken.mockResolvedValue(decoded);
+      mockUserService.findById.mockResolvedValue({ id: decoded.sub, email: decoded.email, role: decoded.role, isActive: true });
+      mockJwtService.generateTokenPair.mockResolvedValue({ accessToken: 'a', refreshToken: 'b', expiresIn: 900 });
+
+      await service.refreshToken({ refreshToken });
+
+      expect(mockJwtService.rotateRefreshToken).toHaveBeenCalledWith(refreshToken, decoded.exp);
+      expect(mockJwtService.generateTokenPair).toHaveBeenCalledWith({
+        id: decoded.sub,
+        email: decoded.email,
+        role: decoded.role,
+      });
+    });
+
+    it('should reject when the token itself is invalid or expired', async () => {
+      mockJwtService.decodeRefreshToken.mockRejectedValue(new Error('Invalid or expired refresh token'));
+
+      await expect(service.refreshToken({ refreshToken })).rejects.toThrow();
+      expect(mockUserService.findById).not.toHaveBeenCalled();
+    });
+
+    it('should reject when the user has been deactivated since the token was issued', async () => {
+      mockJwtService.decodeRefreshToken.mockResolvedValue(decoded);
+      mockUserService.findById.mockResolvedValue({ id: decoded.sub, email: decoded.email, role: decoded.role, isActive: false });
+
+      await expect(service.refreshToken({ refreshToken })).rejects.toThrow('Invalid credentials');
+      expect(mockJwtService.rotateRefreshToken).not.toHaveBeenCalled();
+      expect(mockJwtService.generateTokenPair).not.toHaveBeenCalled();
+    });
+
+    it('should reject when the user no longer exists', async () => {
+      mockJwtService.decodeRefreshToken.mockResolvedValue(decoded);
+      mockUserService.findById.mockResolvedValue(null);
+
+      await expect(service.refreshToken({ refreshToken })).rejects.toThrow('Invalid credentials');
+      expect(mockJwtService.generateTokenPair).not.toHaveBeenCalled();
+    });
   });
 });

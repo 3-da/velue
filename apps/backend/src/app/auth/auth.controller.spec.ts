@@ -14,6 +14,7 @@ describe('AuthController', () => {
 
   const mockUserService = {
     findByEmail: jest.fn(),
+    findById: jest.fn(),
     updateLastLogin: jest.fn(),
   };
 
@@ -35,7 +36,8 @@ describe('AuthController', () => {
 
   const mockJwtService = {
     generateTokenPair: jest.fn(),
-    refreshAccessToken: jest.fn(),
+    decodeRefreshToken: jest.fn(),
+    rotateRefreshToken: jest.fn(),
     revokeRefreshToken: jest.fn(),
   };
 
