@@ -1,4 +1,4 @@
-import { expect, test, type BrowserContext, type Locator, type Page } from '@playwright/test';
+import { type BrowserContext, expect, type Locator, type Page, test } from '@playwright/test';
 import { PrismaClient } from '@velue/shared-data-access';
 
 const API_URL = process.env['API_URL'] || 'http://localhost:3000/api';
