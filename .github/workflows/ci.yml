@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Lint, test & build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The committed Prisma client only carries the Windows engine binary, so CI
+      # regenerates it to get the Linux one before anything imports the client.
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=prisma/schema.prisma
+
+      - name: Lint
+        run: npx nx run-many -t lint
+
+      - name: Test
+        run: npx nx run-many -t test --exclude=frontend-e2e,backend-e2e
+
+      - name: Build
+        run: npx nx run-many -t build
