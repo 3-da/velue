@@ -238,7 +238,7 @@ model CoinsPurchase {
   totalPrice      Decimal       @db.Decimal(8, 2)
   paymentStatus   PaymentStatus @default(PENDING)
   paymentMethod   String?
-  paymentIntentId String? // External payment system reference
+  paymentIntentId String?       @unique // External payment system reference; unique guards against double-crediting a replayed checkout
   createdAt       DateTime      @default(now())
   completedAt     DateTime? // When payment was successfully processed
 

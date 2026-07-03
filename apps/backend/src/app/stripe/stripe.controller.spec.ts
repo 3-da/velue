@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -29,10 +30,16 @@ describe('StripeController', () => {
     buyCoins: jest.fn(),
   };
 
-  beforeEach(async () => {
-    process.env.STRIPE_SECRET_KEY = 'sk_test_mock_key';
-    process.env.FRONTEND_URL = 'http://localhost:4200';
+  const configValues: Record<string, string> = {
+    STRIPE_SECRET_KEY: 'sk_test_mock_key',
+    FRONTEND_URL: 'http://localhost:4200',
+  };
 
+  const mockConfigService = {
+    get: jest.fn((key: string) => configValues[key]),
+  };
+
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StripeController],
       providers: [
@@ -44,6 +51,10 @@ describe('StripeController', () => {
         {
           provide: CoinsService,
           useValue: mockCoinsService,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

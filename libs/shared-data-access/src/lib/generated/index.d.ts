@@ -14667,6 +14667,7 @@ export namespace Prisma {
 
   export type CoinsPurchaseWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    paymentIntentId?: string
     AND?: CoinsPurchaseWhereInput | CoinsPurchaseWhereInput[]
     OR?: CoinsPurchaseWhereInput[]
     NOT?: CoinsPurchaseWhereInput | CoinsPurchaseWhereInput[]
@@ -14676,13 +14677,12 @@ export namespace Prisma {
     totalPrice?: DecimalFilter<"CoinsPurchase"> | Decimal | DecimalJsLike | number | string
     paymentStatus?: EnumPaymentStatusFilter<"CoinsPurchase"> | $Enums.PaymentStatus
     paymentMethod?: StringNullableFilter<"CoinsPurchase"> | string | null
-    paymentIntentId?: StringNullableFilter<"CoinsPurchase"> | string | null
     createdAt?: DateTimeFilter<"CoinsPurchase"> | Date | string
     completedAt?: DateTimeNullableFilter<"CoinsPurchase"> | Date | string | null
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
     coinsPackage?: XOR<CoinsPackageScalarRelationFilter, CoinsPackageWhereInput>
     coinsTransaction?: XOR<CoinsTransactionNullableScalarRelationFilter, CoinsTransactionWhereInput> | null
-  }, "id">
+  }, "id" | "paymentIntentId">
 
   export type CoinsPurchaseOrderByWithAggregationInput = {
     id?: SortOrder

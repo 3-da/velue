@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { StripeService } from './stripe.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CoinsService } from '../coins/coins.service';
@@ -30,10 +31,16 @@ describe('StripeService', () => {
     buyCoins: jest.fn(),
   };
 
-  beforeEach(async () => {
-    process.env.STRIPE_SECRET_KEY = 'sk_test_mock_key';
-    process.env.FRONTEND_URL = 'http://localhost:4200';
+  const configValues: Record<string, string> = {
+    STRIPE_SECRET_KEY: 'sk_test_mock_key',
+    FRONTEND_URL: 'http://localhost:4200',
+  };
 
+  const mockConfigService = {
+    get: jest.fn((key: string) => configValues[key]),
+  };
+
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StripeService,
@@ -45,6 +52,10 @@ describe('StripeService', () => {
           provide: CoinsService,
           useValue: mockCoinsService,
         },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
       ],
     }).compile();
 
@@ -55,5 +66,20 @@ describe('StripeService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should build checkout URLs from the configured FRONTEND_URL', async () => {
+    const mockCreate = jest.fn().mockResolvedValue({ url: 'https://checkout.stripe.com/session' });
+    (service as unknown as { stripe: { checkout: { sessions: { create: jest.Mock } } } }).stripe.checkout.sessions.create =
+      mockCreate;
+
+    await service.createCheckoutSession('price_123', 'user-123');
+
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success_url: 'http://localhost:4200/training-sessions?payment=success&session_id={CHECKOUT_SESSION_ID}',
+        cancel_url: 'http://localhost:4200/pricing',
+      }),
+    );
   });
 });
