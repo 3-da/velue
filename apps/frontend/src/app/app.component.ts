@@ -7,11 +7,10 @@ import { ToastModule } from 'primeng/toast';
   imports: [RouterModule, MenuComponent, ToastModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements OnInit {
-  protected readonly title = 'Velué';
+  protected readonly title = 'Velocity';
 
   ngOnInit(): void {
     // AuthService restores the session (and fetches the user) on construction,

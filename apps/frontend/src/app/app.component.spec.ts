@@ -2,13 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MessageService } from 'primeng/api';
+import { provideRouter } from '@angular/router';
 import { AppComponent } from './app.component';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), MessageService],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), MessageService],
     }).compileComponents();
   });
 
@@ -21,6 +22,6 @@ describe('App', () => {
     expect(compiled.querySelector('app-menu')).toBeTruthy();
     expect(compiled.querySelector('router-outlet')).toBeTruthy();
     expect(compiled.querySelector('footer')).toBeTruthy();
-    expect(compiled.querySelector('footer')?.textContent).toContain('Velué');
+    expect(compiled.querySelector('footer')?.textContent).toContain('Velocity');
   });
 });

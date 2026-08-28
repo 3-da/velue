@@ -6,7 +6,7 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../shared/services/auth.service';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({

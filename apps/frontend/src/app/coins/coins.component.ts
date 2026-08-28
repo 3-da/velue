@@ -1,14 +1,16 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal} from '@angular/core';
-import {CoinsPackageResponse} from '@velue/shared-models';
-import {CoinsService} from '../../shared/services/coins.service';
-import {UserService} from '../../shared/services/user.service';
-import {MessageService} from 'primeng/api';
-import {AuthService} from '../../shared/services/auth.service';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { CurrencyPipe } from '@angular/common';
+import { CoinsPackageResponse } from '@velocity/shared-models';
+import { MessageService } from 'primeng/api';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CoinsService } from '../../shared/services/coins.service';
+import { UserService } from '../../shared/services/user.service';
+import { AuthService } from '../../shared/services/auth.service';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-coins',
-  imports: [],
+  imports: [CurrencyPipe, EmptyStateComponent],
   templateUrl: './coins.component.html',
   styleUrl: './coins.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,6 +24,20 @@ export class CoinsComponent implements OnInit {
 
   readonly coinPackages = signal<CoinsPackageResponse[]>([]);
   readonly isLoading = signal(false);
+
+  protected readonly sortedPackages = computed(() =>
+    [...this.coinPackages()].sort((left, right) => left.coins - right.coins),
+  );
+
+  protected readonly bestValuePackageId = computed(() => {
+    const packages = this.sortedPackages();
+    if (packages.length === 0) return null;
+
+    const cheapestPerCredit = packages.reduce((best, candidate) =>
+      getPricePerCredit(candidate) < getPricePerCredit(best) ? candidate : best,
+    );
+    return cheapestPerCredit.id;
+  });
 
   ngOnInit(): void {
     this.loadCoinPackages();
@@ -45,21 +61,11 @@ export class CoinsComponent implements OnInit {
   }
 
   purchaseCoins(coinsPackage: CoinsPackageResponse): void {
-    if (!this.authService.isAuthenticated()) {
+    if (!this.isSignedIn()) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please sign in to purchase coins.',
-      });
-      return;
-    }
-
-    const currentUser = this.userService.getCurrentUserSignal();
-    if (!currentUser) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please sign in to purchase coins.',
+        summary: 'Sign in required',
+        detail: 'Please sign in to buy a credit pack.',
       });
       return;
     }
@@ -68,18 +74,25 @@ export class CoinsComponent implements OnInit {
       .createStripeCheckoutSession(coinsPackage.stripePriceId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: response => {
-          // Redirect to Stripe checkout
-          window.location.href = response.url;
-        },
-        error: error => {
-          console.error('Error creating checkout session:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Payment Error',
-            detail: 'Failed to create checkout session. Please try again.',
-          });
-        },
+        next: response => (window.location.href = response.url),
+        error: error => this.onCheckoutFailed(error),
       });
   }
+
+  private isSignedIn(): boolean {
+    return this.authService.isAuthenticated() && this.userService.getCurrentUserSignal() !== null;
+  }
+
+  private onCheckoutFailed(error: unknown): void {
+    console.error('Error creating checkout session:', error);
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Payment Error',
+      detail: 'Failed to start checkout. Please try again.',
+    });
+  }
+}
+
+function getPricePerCredit(coinsPackage: CoinsPackageResponse): number {
+  return coinsPackage.coins > 0 ? coinsPackage.price / coinsPackage.coins : Number.POSITIVE_INFINITY;
 }

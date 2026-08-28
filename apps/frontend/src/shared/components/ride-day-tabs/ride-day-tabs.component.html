@@ -1,0 +1,15 @@
+<div aria-label="Ride days" class="daytabs" role="group">
+  @for (day of days(); track day.dateKey) {
+    <button
+      class="daytabs__day"
+      type="button"
+      [attr.aria-pressed]="day.dateKey === selectedDateKey()"
+      [class.is-active]="day.dateKey === selectedDateKey()"
+      (click)="daySelected.emit(day.dateKey)"
+    >
+      <span class="daytabs__weekday">{{ day.date | date: 'EEE' }}</span>
+      <span class="daytabs__number text-numeric">{{ day.date | date: 'd' }}</span>
+      <span class="daytabs__month">{{ day.date | date: 'MMM' }}</span>
+    </button>
+  }
+</div>

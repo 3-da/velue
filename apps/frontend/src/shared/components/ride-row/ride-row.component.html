@@ -1,0 +1,56 @@
+<article class="ride" data-testid="training-session-card">
+  <div class="ride__time">
+    <span class="ride__hour text-numeric" data-testid="session-datetime">{{ session().startTime | startTime }}</span>
+    <span class="ride__duration text-numeric">{{ session().durationMinutes }} min</span>
+  </div>
+
+  <div class="ride__detail">
+    <h3 class="ride__title" data-testid="session-type">{{ session().trainingType | sessionTitle }}</h3>
+    <p class="ride__trainer" data-testid="session-trainer">
+      {{ session().trainer.user.firstName }} {{ session().trainer.user.lastName }}
+    </p>
+    @if (!isScheduled()) {
+      <span class="ride__status" data-testid="session-status-badge">{{ session().status | lowercase }}</span>
+    }
+  </div>
+
+  <div class="ride__capacity">
+    <span class="ride__count text-numeric" data-testid="session-spots">
+      {{ bookedCount() }}/{{ session().maxParticipants }}
+    </span>
+    <div aria-hidden="true" class="ride__meter">
+      <span
+        class="ride__meter-fill"
+        [class.is-full]="isFull()"
+        [class.is-limited]="isLimited()"
+        [style.width.%]="occupancyPercent()"
+      ></span>
+    </div>
+    @if (availabilityLabel(); as label) {
+      <span class="ride__urgency" [class.is-full]="isFull()">{{ label }}</span>
+    }
+  </div>
+
+  <div class="ride__action">
+    @if (isBookedByUser()) {
+      <button
+        class="ride__button is-cancel"
+        data-testid="cancel-booking-btn"
+        type="button"
+        (click)="cancelRequested.emit(session())"
+      >
+        Cancel
+      </button>
+    } @else {
+      <button
+        class="ride__button is-book"
+        data-testid="book-session-btn"
+        type="button"
+        [disabled]="isFull()"
+        (click)="bookRequested.emit(session().id)"
+      >
+        {{ isFull() ? 'Full' : 'Book' }}
+      </button>
+    }
+  </div>
+</article>

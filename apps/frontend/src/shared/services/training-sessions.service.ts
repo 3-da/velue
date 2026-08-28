@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { TrainingSessionResponse, TrainingSessionWithDetails, UpdateTrainingSessionStatus } from '@velue/shared-models';
+import { TrainingSessionResponse, TrainingSessionWithDetails, UpdateTrainingSessionStatus } from '@velocity/shared-models';
 import { environment } from '../../environments/environment';
 
 @Injectable({

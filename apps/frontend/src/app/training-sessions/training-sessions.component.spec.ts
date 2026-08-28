@@ -8,9 +8,10 @@ import { AuthService } from '../../shared/services/auth.service';
 import { MessageService } from 'primeng/api';
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { BookingResponse, TrainingSessionWithDetails, UserWithAllRoles } from '@velue/shared-models';
+import { BookingResponse, TrainingSessionWithDetails, UserWithAllRoles } from '@velocity/shared-models';
 import { HttpErrorResponse } from '@angular/common/http';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getSessionAvailabilityStatus, isSessionFull } from '../../shared/utils/session-booking.utils';
 
 type MockedTrainingSessionsService = {
   getUpcomingTrainingSessions: ReturnType<typeof vi.fn>;
@@ -161,13 +162,13 @@ describe('TrainingSessionsComponent', () => {
   });
 
   describe('Session display logic', () => {
-    it('should group sessions by date correctly', () => {
-      const grouped = component['groupedSessionsByDate']();
+    it('should group sessions into ride days', () => {
       const dateKey = new Date('2025-12-01').toDateString();
+      const day = component['rideDays']().find(candidate => candidate.dateKey === dateKey);
 
-      expect(grouped[dateKey]).toBeDefined();
-      expect(grouped[dateKey].length).toBe(1);
-      expect(grouped[dateKey][0].id).toBe('session-1');
+      expect(day).toBeDefined();
+      expect(day?.sessions.length).toBe(1);
+      expect(day?.sessions[0].id).toBe('session-1');
     });
 
     it('should determine session full status correctly', () => {
@@ -177,11 +178,11 @@ describe('TrainingSessionsComponent', () => {
         bookings: [mockSessions[0].bookings[0]],
       };
 
-      expect(component['isSessionFull'](fullSession)).toBe(true);
+      expect(isSessionFull(fullSession)).toBe(true);
     });
 
     it('should detect if user has booked session', () => {
-      expect(component['hasUserBookedSession'](mockSessions[0])).toBe(true);
+      expect(component['isBookedByCurrentUser'](mockSessions[0])).toBe(true);
     });
 
     it('should return correct availability status', () => {
@@ -191,7 +192,7 @@ describe('TrainingSessionsComponent', () => {
         bookings: Array(5).fill(mockSessions[0].bookings[0]),
       };
 
-      expect(component['getAvailabilityStatus'](halfFullSession)).toBe('success');
+      expect(getSessionAvailabilityStatus(halfFullSession)).toBe('success');
 
       const mostlyFullSession: TrainingSessionWithDetails = {
         ...mockSessions[0],
@@ -199,7 +200,7 @@ describe('TrainingSessionsComponent', () => {
         bookings: Array(9).fill(mockSessions[0].bookings[0]),
       };
 
-      expect(component['getAvailabilityStatus'](mostlyFullSession)).toBe('danger');
+      expect(getSessionAvailabilityStatus(mostlyFullSession)).toBe('danger');
     });
   });
 
@@ -240,7 +241,7 @@ describe('TrainingSessionsComponent', () => {
       expect(messageService.add).toHaveBeenCalledWith({
         severity: 'warn',
         summary: 'Authentication Required',
-        detail: 'Please sign in to book a session.',
+        detail: 'Please sign in to book a ride.',
       });
     });
 

@@ -5,7 +5,7 @@ import { providePrimeNG } from 'primeng/config';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { httpErrorInterceptor } from '../shared/interceptors/http-error.interceptor';
 import { appRoutes } from './app.routes';
-import { VelueTheme } from '../velue-theme';
+import { VelocityTheme } from '../velocity-theme';
 import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
@@ -18,7 +18,7 @@ export const appConfig: ApplicationConfig = {
     MessageService,
     providePrimeNG({
       theme: {
-        preset: VelueTheme,
+        preset: VelocityTheme,
         options: {
           prefix: 'p',
           darkModeSelector: '.dark-mode',

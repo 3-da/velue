@@ -2,7 +2,7 @@ import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, finalize, firstValueFrom, Observable, shareReplay, tap, throwError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LoginRequest, RegisterCustomerRequest, RegisterCustomerResponse, TokenPair, UpdatePasswordRequest } from '@velue/shared-models';
+import { LoginRequest, RegisterCustomerRequest, RegisterCustomerResponse, TokenPair, UpdatePasswordRequest } from '@velocity/shared-models';
 import { Router } from '@angular/router';
 import { UserService } from './user.service';
 import { environment } from '../../environments/environment';
@@ -21,7 +21,7 @@ export class AuthService {
   // Frontend-owned flag in localStorage. Unlike the auth cookies (which live on
   // the backend domain and are unreadable here), this survives a full page reload
   // such as the round-trip to Stripe Checkout.
-  private readonly authFlagKey = 'velue_auth';
+  private readonly authFlagKey = 'velocity_auth';
 
   private readonly isAuthenticatedSignal = signal<boolean>(this.hasStoredAuthFlag());
   readonly isAuthenticated = this.isAuthenticatedSignal.asReadonly(); // Computed signal for public access

@@ -1,87 +1,131 @@
 :host {
   display: block;
-  width: 50%;
-  height: 100%;
-  overflow-y: auto;
-  padding: 1rem 0;
-  align-content: center;
-
-  @media (max-width: 1240px) {
-    width: 100%
-  }
 }
 
-.neon-card {
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid transparent;
-  transition: all 0.3s ease, transform 0.1s ease;
+.packs {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.packs__loading {
+  margin-top: 2.5rem;
+}
+
+.pack {
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
-  inset 0 0 20px rgba(16, 185, 129, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--color-hairline);
+  border-radius: 4px;
+  background: var(--color-ink-900);
+  transition: border-color 0.15s ease;
 }
 
-.neon-card::before {
-  content: '';
+.pack:hover {
+  border-color: var(--color-hairline-strong);
+}
+
+.pack.is-featured {
+  border-color: var(--color-volt-500);
+}
+
+.pack__badge {
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
-  transition: left 0.5s;
+  top: -0.625rem;
+  left: 1.5rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 2px;
+  background: var(--color-volt-500);
+  font-size: 0.5625rem;
+  font-variation-settings: "wght" 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-950);
 }
 
-.neon-card:hover {
-  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4),
-  0 0 50px rgba(16, 185, 129, 0.3),
-  inset 0 0 30px rgba(16, 185, 129, 0.2);
-  border-color: #10b981;
+.pack__name {
+  margin: 0;
+}
+
+.pack__credits {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  font-size: 3rem;
+  color: var(--color-chalk);
+}
+
+.pack__credits-unit {
+  font-size: 0.6875rem;
+  font-variation-settings: "wdth" 100, "wght" 600;
+  letter-spacing: 0.18em;
+  color: var(--color-smoke);
+}
+
+.pack__price {
+  margin: 1rem 0 0;
+  font-size: 1.5rem;
+  font-variation-settings: "wght" 700;
+  color: var(--color-volt-500);
+}
+
+.pack__unit {
+  margin: 0.1875rem 0 0;
+  font-size: 0.75rem;
+  color: var(--color-smoke);
+}
+
+.pack__description {
+  margin: 1rem 0 1.75rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-ash);
+}
+
+.pack__button {
+  margin-top: auto;
+  padding: 0.8125rem 1.25rem;
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: 2px;
+  background: transparent;
+  font-size: 0.75rem;
+  font-variation-settings: "wght" 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-chalk);
   cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.neon-card:hover::before {
-  left: 100%;
+.pack__button:hover {
+  background: var(--color-volt-500);
+  border-color: var(--color-volt-500);
+  color: var(--color-ink-950);
 }
 
-.neon-card:active {
-  transform: scale(0.99);
-  transition: transform 0.1s ease-in-out;
+.pack.is-featured .pack__button {
+  background: var(--color-volt-500);
+  border-color: var(--color-volt-500);
+  color: var(--color-ink-950);
 }
 
-.neon-card i {
-  transition: transform 0.3s ease-out;
+.pack.is-featured .pack__button:hover {
+  background: var(--color-volt-400);
+  border-color: var(--color-volt-400);
 }
 
-.neon-card:hover i {
-  animation: jumpRotateFall 1.5s ease-in-out infinite;
-}
-
-/* Reset smoothly when not hovering */
-.neon-card:not(:hover) i {
-  animation: resetAnimation 0.3s ease-out forwards;
-}
-
-@keyframes jumpRotateFall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-  }
-  30% {
-    transform: translateY(-10px) rotate(180deg);
-  }
-  60% {
-    transform: translateY(0) rotate(360deg);
-  }
-  80% {
-    transform: translateY(5px) rotate(360deg);
-  }
-  100% {
-    transform: translateY(0) rotate(360deg);
+@media (min-width: 640px) {
+  .packs {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
   }
 }
 
-@keyframes resetAnimation {
-  to {
-    transform: translateY(0) rotate(0deg);
+@media (min-width: 1024px) {
+  .packs {
+    grid-template-columns: repeat(4, 1fr);
   }
 }

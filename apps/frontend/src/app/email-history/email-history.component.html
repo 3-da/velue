@@ -1,48 +1,39 @@
-@if (emails()?.length === 0) {
-  <div class="w-full h-full flex items-center justify-center">
-    <div class="text-center">
-      <i class="pi pi-envelope text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white mb-4 shadowed-text"></i>
-      <p class="shadowed-text text-xl sm:text-2xl md:text-3xl text-white">No emails sent yet.</p>
-      <p class="shadowed-text text-white/70 mt-2 text-base sm:text-lg md:text-xl">Password change notifications will appear here.</p>
-    </div>
-  </div>
-} @else {
-  <div class="tabs-wrapper w-full md:w-2/3 mx-auto">
-    <div class="flex justify-end p-4 bg-surface-900">
+<div class="page-shell">
+  <header>
+    <p class="text-eyebrow">Development only</p>
+    <h1 class="page-title text-display">Email history</h1>
+    <p class="page-lede">Every transactional email this environment has sent, kept for local inspection.</p>
+  </header>
+
+  @if (emails()?.length === 0) {
+    <app-empty-state
+      body="Password change and reset notifications will show up here once they are sent."
+      headline="No emails sent"
+      icon="pi-envelope"
+    />
+  } @else {
+    <div class="emails__toolbar">
       <p-button
         icon="pi pi-trash"
-        label="Delete All Emails"
+        label="Delete all"
         severity="danger"
         [loading]="deleting()"
         (onClick)="deleteAllEmails()"
       />
     </div>
-    <div class="overflow-y-auto bg-black-opacity">
-      @for (email of emails(); track email.sentAt) {
-        <p-card class="w-3/4 my-8 mx-auto cursor-pointer" (click)="viewEmailContent(email)">
-          <ng-template pTemplate="header">
-            <div class="p-4">
-              <h2 class="text-xl font-semibold mb-2">{{ email.subject }}</h2>
-              <h3 class="text-lg text-amber-400">
-                <i class="pi pi-calendar mr-2"></i>
-                {{ email.sentAt | date:'medium' }}
-              </h3>
-            </div>
-          </ng-template>
-          <div>
-            <p><strong>To:</strong> {{ email.to }}</p>
-            <p class="text-gray-400 mt-2">{{ email.textContent.substring(0, 150) }}...</p>
-          </div>
-          <ng-template pTemplate="footer">
-            <div class="flex justify-end p-4">
-              <p-tag severity="success" value="Sent" [rounded]="true" />
-            </div>
-          </ng-template>
-        </p-card>
-      }
-    </div>
-  </div>
-}
+
+    @for (email of emails(); track email.sentAt) {
+      <button class="emailrow" type="button" (click)="viewEmailContent(email)">
+        <span class="emailrow__head">
+          <span class="emailrow__subject">{{ email.subject }}</span>
+          <span class="emailrow__date text-numeric">{{ email.sentAt | date: 'medium' }}</span>
+        </span>
+        <span class="emailrow__to">{{ email.to }}</span>
+        <span class="emailrow__preview">{{ email.textContent.substring(0, 140) }}…</span>
+      </button>
+    }
+  }
+</div>
 
 <p-dialog
   contentStyleClass="max-h-[70vh] overflow-y-auto"
@@ -55,7 +46,7 @@
   [(visible)]="showEmailDialog"
 >
   <ng-template pTemplate="header">
-    <h2 class="text-xl font-semibold">{{ selectedEmail()?.subject }}</h2>
+    <h2 class="text-lg font-semibold">{{ selectedEmail()?.subject }}</h2>
   </ng-template>
   <div [innerHTML]="sanitizedEmailContent()"></div>
 </p-dialog>
