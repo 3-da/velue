@@ -80,7 +80,7 @@ The system is designed as a **3-tier role system**:
 
 ### Production Access
 
-**Live Application**: [https://velocity.vercel.app/](https://velocity.vercel.app/)
+**Live Application**: _Redeploying under the new name - link added once the domain is live._
 
 ### Demo Account
 
@@ -553,6 +553,10 @@ npx nx run shared-data-access:db-migrate
 npx nx run shared-data-access:db-seed
 ```
 
+> **This command truncates every table before inserting.** It is meant for first-time
+> setup and deliberate resets. Never run it to top up an existing database - it erases
+> registered accounts and bookings along with the fixtures it replaces.
+
 **Seed Data Includes**:
 
 - Demo customer account: `test-customer@velocity.de` / `Customer2024!`
@@ -565,6 +569,9 @@ npx nx run shared-data-access:db-seed
 ```bash
 npx nx run shared-data-access:db-generate
 ```
+
+The generated client is gitignored, so this step is required after every clone. CI and
+the Railway build run it too.
 
 ### Running the Application
 
@@ -607,7 +614,15 @@ npx nx serve frontend
 ```bash
 # Copy template and add your own credentials
 cp .env.example .env.development
+
+# The Prisma CLI reads .env, not .env.development - it needs its own copy
+echo "DATABASE_URL=postgresql://velocity_user:velocity_password@localhost:5433/velocity_db" > .env
 ```
+
+Both files are required. The Nest app reads `.env.development`; `db-studio`,
+`db-migrate` and `db-seed` read `.env` and ignore the other, failing with
+`Environment variable not found: DATABASE_URL` if it is absent. Keep `DATABASE_URL`
+identical in both.
 
 You'll need to create free accounts for:
 
