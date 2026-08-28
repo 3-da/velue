@@ -9,8 +9,8 @@ import { RegisterCustomerDto } from '../customer/dto/register-customer.dto';
 import { RegisterCustomerResponseDto } from '../customer/dto/register-customer-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { TokenPair, UserWithAllRoles } from '@velue/shared-models';
-import { ConsentType } from '@velue/shared-data-access';
+import { TokenPair, UserWithAllRoles } from '@velocity/shared-models';
+import { ConsentType } from '@velocity/shared-data-access';
 import { EmailService } from '../email/email.service';
 
 @Injectable()
@@ -174,7 +174,7 @@ export class AuthService {
     }
 
     // Prevent password changes for demo accounts
-    const demoAccounts = ['test-customer@velue.de', 'test-trainer@velue.de', 'test-admin@velue.de'];
+    const demoAccounts = ['test-customer@velocity.de', 'test-trainer@velocity.de', 'test-admin@velocity.de'];
     if (demoAccounts.includes(user.email)) {
       throw new ConflictException(
         'Password cannot be changed for demo accounts. These accounts are shared for testing purposes. Please register a new account to try the password change feature.',

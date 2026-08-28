@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserWithAllRoles } from '@velocity/shared-models';
 
 export const User = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): UserWithAllRoles => {

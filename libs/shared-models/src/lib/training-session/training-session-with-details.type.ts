@@ -1,4 +1,4 @@
-import type { BookingStatus, TrainingSession } from '@velue/shared-data-access';
+import type { BookingStatus, TrainingSession } from '@velocity/shared-data-access';
 
 export type TrainingSessionWithDetails = TrainingSession & {
   trainer: {

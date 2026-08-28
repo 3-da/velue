@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserRole } from '@velue/shared-data-access';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserRole } from '@velocity/shared-data-access';
+import { UserWithAllRoles } from '@velocity/shared-models';
 
 @Injectable()
 export class UserRoleGuard implements CanActivate {

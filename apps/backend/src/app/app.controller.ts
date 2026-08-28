@@ -8,7 +8,7 @@ export class AppController {
   @Get()
   getRoot(): { message: string; endpoints: string[] } {
     return {
-      message: 'Velué API',
+      message: 'Velocity API',
       endpoints: ['/api/health', '/api/auth', '/api/user', '/api/coins', '/api/training-sessions']
     };
   }

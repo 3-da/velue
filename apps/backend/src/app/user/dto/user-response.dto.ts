@@ -1,5 +1,5 @@
-import { Admin, Customer, Trainer } from '@velue/shared-data-access';
-import { UserResponse, UserWithAllRoles } from '@velue/shared-models';
+import { Admin, Customer, Trainer } from '@velocity/shared-data-access';
+import { UserResponse, UserWithAllRoles } from '@velocity/shared-models';
 
 // Safe projection of BaseUser for client responses. Password hashes and
 // reset-token secrets must never leave the server, so they are not copied here.

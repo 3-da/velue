@@ -3,7 +3,7 @@ import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { User } from '../../auth/decorators/user.decorator';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserWithAllRoles } from '@velocity/shared-models';
 import { BookingDto } from './dto/booking-response.dto';
 
 @Controller()

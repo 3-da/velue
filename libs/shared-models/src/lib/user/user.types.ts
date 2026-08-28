@@ -1,4 +1,4 @@
-import type { Admin, BaseUser, Customer, Trainer } from '@velue/shared-data-access';
+import type { Admin, BaseUser, Customer, Trainer } from '@velocity/shared-data-access';
 
 export type UserWithAllRoles = BaseUser & {
   customer: Customer | null;

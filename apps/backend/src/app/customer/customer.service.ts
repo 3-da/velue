@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { RegisterCustomerDto } from './dto/register-customer.dto';
-import { UserWithAllRoles } from '@velue/shared-models';
-import { BaseUser, Customer, UserRole } from '@velue/shared-data-access';
+import { UserWithAllRoles } from '@velocity/shared-models';
+import { BaseUser, Customer, UserRole } from '@velocity/shared-data-access';
 
 @Injectable()
 export class CustomerService {

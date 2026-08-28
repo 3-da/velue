@@ -1,4 +1,4 @@
-import type { UserRole } from '@velue/shared-data-access';
+import type { UserRole } from '@velocity/shared-data-access';
 
 export type JwtPayload = {
   sub: string; // User ID

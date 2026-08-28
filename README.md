@@ -1,4 +1,4 @@
-# Velué Fitness Booking System
+# Velocity — Indoor Cycling Studio Booking System
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Angular](https://img.shields.io/badge/Angular-20.1-DD0031?logo=angular&logoColor=white)](https://angular.io/)
@@ -8,9 +8,9 @@
 [![Nx](https://img.shields.io/badge/Nx-21.4-143055?logo=nx&logoColor=white)](https://nx.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A full-stack fitness booking system with credit-based payments, built as an Nx monorepo. This is a **real client project** developed under tight time constraints during a job transition, approved for portfolio use. It demonstrates rapid MVP development capabilities and production-ready architectural thinking.
+A full-stack indoor cycling studio booking system with credit-based payments, built as an Nx monorepo. This is a **personal showcase project** — built to practise and demonstrate my skills on a realistic domain, not for a client and not in use by any studio. It demonstrates rapid MVP development and production-style architectural thinking.
 
-**Key Achievement**: Fully functional booking system with Stripe integration, JWT authentication, and role-based access control delivered within aggressive timeline constraints.
+**Key Achievement**: Fully functional booking system with Stripe integration, JWT authentication, and role-based access control, built alongside a full-time job.
 
 ---
 
@@ -37,21 +37,21 @@ A full-stack fitness booking system with credit-based payments, built as an Nx m
 
 ## Project Context
 
-**This is a rapid MVP built under significant time constraints during a job transition.**
+**This is a rapid MVP built as a personal showcase project, in limited spare time.**
 
-- **Real Client Project**: Built for an actual client in the German fitness industry
-- **Portfolio Approved**: Client has approved this project for portfolio and demonstration purposes
-- **Time Constraints**: Developed with 1-hour daily coding sessions to meet client deadline
+- **Personal Project**: Modelled on the German boutique-fitness industry — no client involved, not in use by any studio. "Velocity" is a fictional studio name used for this demo and is not affiliated with any real business.
+- **Purpose**: Practise and demonstrate full-stack skills on a realistic business domain
+- **Time Constraints**: Developed in roughly 1-hour daily coding sessions against a self-imposed deadline
 - **Current Status**: Functional MVP with Customer role fully implemented
 - **Next Steps**: Requires comprehensive testing, refactoring, and Trainer/Admin role implementation
 
-**Honest Assessment**: This project prioritizes working features over comprehensive test coverage and production hardening. It demonstrates my ability to deliver functional software under tight deadlines while maintaining clean architecture and clear improvement paths.
+**Honest Assessment**: This project prioritizes working features over comprehensive test coverage and production hardening. It demonstrates my ability to deliver functional software quickly while maintaining clean architecture and clear improvement paths.
 
 ---
 
 ## About the Project
 
-Velué is a **complete booking system and business management platform** for fitness studios, specifically designed for the German market with GDPR/DSGVO compliance built-in.
+Velocity is a **complete booking system and business management platform** for indoor cycling studios, specifically designed for the German market with GDPR/DSGVO compliance built-in.
 
 ### Business Domain
 
@@ -80,13 +80,13 @@ The system is designed as a **3-tier role system**:
 
 ### Production Access
 
-**Live Application**: [https://velue.vercel.app/](https://velue.vercel.app/)
+**Live Application**: [https://velocity.vercel.app/](https://velocity.vercel.app/)
 
 ### Demo Account
 
 No registration required - use these credentials to test immediately:
 
-- **Email**: `test-customer@velue.de`
+- **Email**: `test-customer@velocity.de`
 - **Password**: `Customer2024!`
 
 ### Test Payment Cards
@@ -365,7 +365,7 @@ External Services:
 ### Monorepo Structure
 
 ```
-velue/
+velocity/
 ├── apps/
 │   ├── backend/                  # NestJS API server
 │   │   └── src/
@@ -430,7 +430,7 @@ BaseUser(id, email, password, role, ...)
 #### Universal DTO Strategy
 
 ```typescript
-// Shared library (@velue/shared-models)
+// Shared library (@velocity/shared-models)
 export type CreateBookingRequest = {
   trainingSessionId: string;
   userId: string;
@@ -518,8 +518,8 @@ Every credit change is recorded with:
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/velue.git
-cd velue
+git clone https://github.com/yourusername/velocity.git
+cd velocity
 ```
 
 #### 2. Install Dependencies
@@ -538,7 +538,7 @@ Verify database is running:
 
 ```bash
 docker-compose ps
-# Should show velue-postgres as "Up"
+# Should show velocity-postgres as "Up"
 ```
 
 #### 4. Run Database Migrations
@@ -555,7 +555,7 @@ npx nx run shared-data-access:db-seed
 
 **Seed Data Includes**:
 
-- Demo customer account: `test-customer@velue.de` / `Customer2024!`
+- Demo customer account: `test-customer@velocity.de` / `Customer2024!`
 - Predefined credit packages (Starter, Regular, Premium, Unlimited)
 - Upcoming training sessions for testing
 - Sample bookings
@@ -589,7 +589,7 @@ If you have PostgreSQL 17 installed locally:
 
 ```bash
 # Update .env.development with your local PostgreSQL connection
-DATABASE_URL=postgresql://your_user:your_password@localhost:5432/velue_db
+DATABASE_URL=postgresql://your_user:your_password@localhost:5432/velocity_db
 
 # Run migrations and seed
 npx nx run shared-data-access:db-migrate
@@ -622,7 +622,7 @@ You'll need to create free accounts for:
 
 ### Demo Account
 
-**Email**: `test-customer@velue.de`
+**Email**: `test-customer@velocity.de`
 **Password**: `Customer2024!`
 
 ### User Registration Flow
@@ -747,7 +747,7 @@ You'll need to create free accounts for:
 All routes are served under the global `/api` prefix.
 
 **Development**: `http://localhost:3000/api`
-**Production** (Planned): `https://api.velue.de/api`
+**Production** (Planned): `https://api.velocity.de/api`
 
 ### Main Endpoints
 
@@ -918,12 +918,12 @@ Or via httpOnly cookie (automatically handled by browser).
 
 ### Why MVP-First?
 
-This project was built under **real-world business constraints**:
+This project was built under **deliberately realistic constraints**:
 
-1. **Client Deadline**: October 30, 2025 deadline requiring rapid delivery
-2. **Limited Time**: 1-hour daily coding sessions due to job transition
-3. **Business Value**: Client needed working features over comprehensive tests
-4. **Portfolio Opportunity**: Real client project approved for demonstration
+1. **Self-Imposed Deadline**: October 30, 2025, to force rapid delivery
+2. **Limited Time**: 1-hour daily coding sessions alongside work
+3. **Scope Choice**: Working end-to-end features prioritized over comprehensive tests
+4. **Goal**: A showcase of what I can ship on a realistic business domain
 
 **Trade-offs Made**:
 
@@ -1099,7 +1099,7 @@ This project was built under **real-world business constraints**:
 
 ## Contributing
 
-This is a client project used for portfolio purposes. While not open for external contributions, feedback and suggestions are welcome for discussion.
+This is a personal showcase project. While not open for external contributions, feedback and suggestions are welcome for discussion.
 
 If you're an employer evaluating this project:
 
@@ -1127,7 +1127,7 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 **GitHub**: [github.com/darijanavric](https://github.com/darijanavric)
 
-**Project Repository**: [https://github.com/3-da/velue](https://github.com/3-da/velue)
+**Project Repository**: [https://github.com/3-da/velocity](https://github.com/3-da/velocity)
 
 ---
 

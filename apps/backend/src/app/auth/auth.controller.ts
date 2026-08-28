@@ -9,7 +9,7 @@ import { RegisterCustomerResponseDto } from '../customer/dto/register-customer-r
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { TokenPair } from '@velue/shared-models';
+import { TokenPair } from '@velocity/shared-models';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')

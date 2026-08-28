@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import zxcvbn from 'zxcvbn';
-import { PasswordStrengthResult, PasswordValidationUserData, PasswordValidator } from '@velue/shared-models';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { PasswordStrengthResult, PasswordValidationUserData, PasswordValidator } from '@velocity/shared-models';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 
 @Injectable()
 export class PasswordService {

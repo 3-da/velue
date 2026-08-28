@@ -1,11 +1,11 @@
 import {BadRequestException, ForbiddenException, Injectable} from '@nestjs/common';
 import {BookingDto} from './dto/booking-response.dto';
 import {PrismaService} from '../../prisma/prisma.service';
-import {TRAINING_SESSION} from '@velue/shared-constants';
+import {TRAINING_SESSION} from '@velocity/shared-constants';
 import {TrainingSessionsService} from '../training-sessions.service';
 import {CreateBookingDto} from './dto/create-booking.dto';
 import {Prisma} from '@prisma/client';
-import {TrainingSession} from '@velue/shared-data-access';
+import {TrainingSession} from '@velocity/shared-data-access';
 
 @Injectable()
 export class BookingService {

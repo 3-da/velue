@@ -1,8 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy, UnauthorizedException } from '@nestjs/common';
 import { JwtService as NestJwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserRole } from '@velue/shared-data-access';
-import { JwtPayload, TokenPair } from '@velue/shared-models';
+import { UserRole } from '@velocity/shared-data-access';
+import { JwtPayload, TokenPair } from '@velocity/shared-models';
 
 @Injectable()
 export class JwtService implements OnModuleDestroy {

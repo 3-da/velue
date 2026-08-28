@@ -7,8 +7,8 @@ import {
   TrainingTimeSlot,
   TrainingType,
   UserRole,
-} from '@velue/shared-data-access';
-import { COINS_PACKAGES, TRAINING_SESSION } from '@velue/shared-constants';
+} from '@velocity/shared-data-access';
+import { COINS_PACKAGES, TRAINING_SESSION } from '@velocity/shared-constants';
 
 const prisma = new PrismaClient();
 
@@ -64,9 +64,9 @@ async function main(): Promise<void> {
     `📊 Summary: ${customers.length} customers, ${trainers.length} trainers, ${admins.length} admins, ${coinsPackages.length} coins packages, ${sessionCount} training sessions, ${bookingCount} bookings`,
   );
   console.log('🔑 Test accounts:');
-  console.log(`   Customer: test-customer@velue.de / ${TEST_PASSWORDS.customer}`);
-  console.log(`   Trainer:  test-trainer@velue.de  / ${TEST_PASSWORDS.trainer}`);
-  console.log(`   Admin:    test-admin@velue.de    / ${TEST_PASSWORDS.admin}`);
+  console.log(`   Customer: test-customer@velocity.de / ${TEST_PASSWORDS.customer}`);
+  console.log(`   Trainer:  test-trainer@velocity.de  / ${TEST_PASSWORDS.trainer}`);
+  console.log(`   Admin:    test-admin@velocity.de    / ${TEST_PASSWORDS.admin}`);
 }
 
 // Delete in order to respect foreign key constraints
@@ -91,7 +91,7 @@ async function createCustomers(customerCount: number, trainingTypes: TrainingTyp
     data: {
       firstName: 'Test',
       lastName: 'Customer',
-      email: 'test-customer@velue.de',
+      email: 'test-customer@velocity.de',
       password: testCustomerPassword,
       birthDate: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
       phone: faker.phone.number(),
@@ -154,7 +154,7 @@ async function createTrainers(trainerCount: number, trainingTypes: TrainingType[
     data: {
       firstName: 'Test',
       lastName: 'Trainer',
-      email: 'test-trainer@velue.de',
+      email: 'test-trainer@velocity.de',
       password: testTrainerPassword,
       birthDate: faker.date.birthdate({ min: 25, max: 45, mode: 'age' }),
       phone: faker.phone.number(),
@@ -220,7 +220,7 @@ async function createAdmins(adminCount: number): Promise<BaseUser[]> {
     data: {
       firstName: 'Test',
       lastName: 'Admin',
-      email: 'test-admin@velue.de',
+      email: 'test-admin@velocity.de',
       password: testAdminPassword,
       birthDate: faker.date.birthdate({ min: 30, max: 55, mode: 'age' }),
       phone: faker.phone.number(),

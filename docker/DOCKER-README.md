@@ -1,4 +1,4 @@
-# Docker Setup for Velue Project
+# Docker Setup for Velocity Project
 
 ## Quick Start
 
@@ -25,11 +25,11 @@
 ## Services
 
 ### PostgreSQL 17
-- **Container:** `velue-postgres`
+- **Container:** `velocity-postgres`
 - **Port:** 5433
-- **Database:** `velue_db`
-- **User:** `velue_user`
-- **Password:** `velue_password`
+- **Database:** `velocity_db`
+- **User:** `velocity_user`
+- **Password:** `velocity_password`
 
 ## Useful Commands
 
@@ -47,7 +47,7 @@ docker-compose down
 docker-compose down -v
 
 # Access PostgreSQL CLI
-docker exec -it velue-postgres psql -U velue_user -d velue_db
+docker exec -it velocity-postgres psql -U velocity_user -d velocity_db
 
 # View running containers
 docker-compose ps
@@ -58,10 +58,10 @@ docker-compose ps
 ### From Host Machine
 - **Host:** localhost
 - **Port:** 5433
-- **Database:** velue_db
-- **Username:** velue_user
-- **Password:** velue_password
-- **Connection String:** `postgresql://velue_user:velue_password@localhost:5433/velue_db`
+- **Database:** velocity_db
+- **Username:** velocity_user
+- **Password:** velocity_password
+- **Connection String:** `postgresql://velocity_user:velocity_password@localhost:5433/velocity_db`
 
 ## Development Workflow
 

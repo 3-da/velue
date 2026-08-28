@@ -5,8 +5,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRoleGuard } from '../auth/guards/user-role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { User } from '../auth/decorators/user.decorator';
-import { UserWithAllRoles } from '@velue/shared-models';
-import { UserRole } from '@velue/shared-data-access';
+import { UserWithAllRoles } from '@velocity/shared-models';
+import { UserRole } from '@velocity/shared-data-access';
 
 @Controller('stripe')
 @UseGuards(JwtAuthGuard, UserRoleGuard)

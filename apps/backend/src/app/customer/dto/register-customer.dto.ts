@@ -1,6 +1,6 @@
 import { Equals, IsBoolean, IsDateString, IsEmail, IsOptional, IsPhoneNumber, IsString, MaxLength, MinLength } from 'class-validator';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
-import { RegisterCustomerRequest } from '@velue/shared-models';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
+import { RegisterCustomerRequest } from '@velocity/shared-models';
 
 export class RegisterCustomerDto implements RegisterCustomerRequest {
   @IsString()

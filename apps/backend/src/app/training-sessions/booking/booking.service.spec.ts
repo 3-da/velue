@@ -3,8 +3,8 @@ import { BookingService } from './booking.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TrainingSessionsService } from '../training-sessions.service';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
-import { TRAINING_SESSION } from '@velue/shared-constants';
-import { Booking, TrainingSession } from '@velue/shared-data-access';
+import { TRAINING_SESSION } from '@velocity/shared-constants';
+import { Booking, TrainingSession } from '@velocity/shared-data-access';
 
 type TransactionMock = {
   $queryRaw: jest.Mock;

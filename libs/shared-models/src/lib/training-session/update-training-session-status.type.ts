@@ -1,4 +1,4 @@
-import type { TrainingStatus } from '@velue/shared-data-access';
+import type { TrainingStatus } from '@velocity/shared-data-access';
 
 export type UpdateTrainingSessionStatus = {
   status: TrainingStatus;

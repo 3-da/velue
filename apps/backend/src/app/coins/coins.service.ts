@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CoinsPackage } from '@velue/shared-data-access';
+import { CoinsPackage } from '@velocity/shared-data-access';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()

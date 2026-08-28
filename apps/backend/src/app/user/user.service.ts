@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserWithAllRoles } from '@velocity/shared-models';
 
 @Injectable()
 export class UserService {

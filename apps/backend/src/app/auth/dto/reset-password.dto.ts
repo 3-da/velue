@@ -1,5 +1,5 @@
 import { IsString, MinLength } from 'class-validator';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 
 export class ResetPasswordDto {
   @IsString()

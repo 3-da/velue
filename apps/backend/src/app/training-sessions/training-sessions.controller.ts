@@ -1,7 +1,7 @@
 import {Body, Controller, Get, Param, Patch, UseGuards} from '@nestjs/common';
 import {TrainingSessionsService} from './training-sessions.service';
 import {UpdateTrainingSessionStatusDto} from './dto';
-import {TrainingSession, UserRole} from '@velue/shared-data-access';
+import {TrainingSession, UserRole} from '@velocity/shared-data-access';
 import {JwtAuthGuard} from '../auth/guards/jwt-auth.guard';
 import {UserRoleGuard} from '../auth/guards/user-role.guard';
 import {Roles} from '../auth/decorators/roles.decorator';

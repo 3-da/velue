@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
-import { TokenPair } from '@velue/shared-models';
+import { TokenPair } from '@velocity/shared-models';
 
 @Injectable()
 export class CookieService {
