@@ -69,3 +69,11 @@ vitest.config.*.timestamp*
 CLAUDE.md
 ANGULAR_GUIDELINES.md
 .vercel
+
+# Graphify (local code-graph tooling, regenerated on demand)
+graphify-out/
+.graphifyignore
+
+# Generated Prisma client - rebuilt by `prisma generate` in CI and on Railway,
+# and the committed copy only ever carried the Windows engine binary.
+libs/shared-data-access/src/lib/generated/
