@@ -84,7 +84,8 @@ The system is designed as a **3-tier role system**:
 
 ### Demo Account
 
-No registration required - use these credentials to test immediately:
+No registration required. On the login screen, click **"Continue as demo customer"**
+for one-click access - or log in manually with:
 
 - **Email**: `test-customer@velocity.de`
 - **Password**: `Customer2024!`
