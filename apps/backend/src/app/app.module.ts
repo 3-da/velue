@@ -12,6 +12,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { CustomerModule } from './customer/customer.module';
 import { DevModule } from './dev/dev.module';
 import { EmailModule } from './email/email.module';
+import { DemoScheduleModule } from './demo-schedule/demo-schedule.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmailModule } from './email/email.module';
       envFilePath: ['.env.development', '.env'],
     }),
     TrainingSessionsModule,
+    DemoScheduleModule,
     AuthModule,
     UserModule,
     ThrottlerModule.forRoot({

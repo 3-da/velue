@@ -4,6 +4,7 @@
   "private": true,
   "type": "commonjs",
   "dependencies": {
-    "tslib": "*"
+    "tslib": "*",
+    "@velocity/shared-data-access": "0.0.1"
   }
 }

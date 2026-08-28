@@ -3,7 +3,12 @@
 
 @plugin "tailwindcss-primeui";
 
-@theme {
+// `static` disables Tailwind's usage-based tree-shaking of theme variables. Angular
+// component stylesheets consume these tokens as plain var(--color-*) lookups, compiled
+// by a separate pipeline Tailwind never scans - without `static`, any token not also
+// referenced here in styles.scss looks "unused" to Tailwind and gets dropped from :root
+// (this is exactly what happened to --color-volt-400: real everywhere except here).
+@theme static {
   --color-ink-950: #0b0b0c;
   --color-ink-900: #121214;
   --color-ink-800: #17171a;
