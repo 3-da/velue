@@ -80,7 +80,7 @@ The system is designed as a **3-tier role system**:
 
 ### Production Access
 
-**Live Application**: _Redeploying under the new name - link added once the domain is live._
+**Live Application**: [velocity-de.vercel.app](https://velocity-de.vercel.app)
 
 ### Demo Account
 
