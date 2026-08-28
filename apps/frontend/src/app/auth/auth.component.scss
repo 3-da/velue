@@ -49,6 +49,18 @@
   background: var(--color-ink-800);
 }
 
+.auth__demo-eyebrow {
+  margin: 0 0 0.375rem;
+  color: var(--color-volt-500);
+}
+
+.auth__demo-title {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-variation-settings: "wght" 700;
+  color: var(--color-chalk);
+}
+
 .auth__demo-text {
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;
