@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx nx build frontend --configuration=production",
+  "buildCommand": "npx prisma generate --schema=prisma/schema.prisma && npx nx build frontend --configuration=production",
   "outputDirectory": "dist/apps/frontend/browser",
   "rewrites": [
     {
