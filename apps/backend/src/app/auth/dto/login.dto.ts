@@ -1,6 +1,6 @@
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
-import { LoginRequest } from '@velue/shared-models';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
+import { LoginRequest } from '@velocity/shared-models';
 
 export class LoginDto implements LoginRequest {
   @IsEmail()

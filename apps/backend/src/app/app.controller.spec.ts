@@ -16,7 +16,7 @@ describe('AppController', () => {
     it('should return API information with endpoints', () => {
       const appController = app.get<AppController>(AppController);
       const result = appController.getRoot();
-      expect(result).toHaveProperty('message', 'Velué API');
+      expect(result).toHaveProperty('message', 'Velocity API');
       expect(result).toHaveProperty('endpoints');
       expect(Array.isArray(result.endpoints)).toBe(true);
     });

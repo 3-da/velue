@@ -1,4 +1,4 @@
-import { BaseUser, Customer } from '@velue/shared-data-access';
+import { BaseUser, Customer } from '@velocity/shared-data-access';
 
 export class CustomerProfileResponseDto {
   user: {

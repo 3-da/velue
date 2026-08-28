@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import * as argon2 from 'argon2';
-import { PrismaClient } from '@velue/shared-data-access';
+import { PrismaClient } from '@velocity/shared-data-access';
 
 // There's no API to adjust a customer's coin balance directly (buying coins goes
 // through Stripe) so test fixtures write it straight to the DB.

@@ -15,9 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@velue/shared-constants": ["libs/shared-constants/src/index.ts"],
-      "@velue/shared-data-access": ["libs/shared-data-access/src/index.ts"],
-      "@velue/shared-models": ["libs/shared-models/src/index.ts"]
+      "@velocity/shared-constants": ["libs/shared-constants/src/index.ts"],
+      "@velocity/shared-data-access": ["libs/shared-data-access/src/index.ts"],
+      "@velocity/shared-models": ["libs/shared-models/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

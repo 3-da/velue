@@ -4,11 +4,15 @@ import {
   BaseUser,
   CoinsPackage,
   PrismaClient,
-  TrainingTimeSlot,
   TrainingType,
   UserRole,
-} from '@velue/shared-data-access';
-import { COINS_PACKAGES, TRAINING_SESSION } from '@velue/shared-constants';
+} from '@velocity/shared-data-access';
+import {
+  COINS_PACKAGES,
+  DEMO_DAILY_SCHEDULE,
+  DEMO_SESSION_WINDOW_DAYS,
+  TRAINING_SESSION,
+} from '@velocity/shared-constants';
 
 const prisma = new PrismaClient();
 
@@ -64,9 +68,9 @@ async function main(): Promise<void> {
     `📊 Summary: ${customers.length} customers, ${trainers.length} trainers, ${admins.length} admins, ${coinsPackages.length} coins packages, ${sessionCount} training sessions, ${bookingCount} bookings`,
   );
   console.log('🔑 Test accounts:');
-  console.log(`   Customer: test-customer@velue.de / ${TEST_PASSWORDS.customer}`);
-  console.log(`   Trainer:  test-trainer@velue.de  / ${TEST_PASSWORDS.trainer}`);
-  console.log(`   Admin:    test-admin@velue.de    / ${TEST_PASSWORDS.admin}`);
+  console.log(`   Customer: test-customer@velocity.de / ${TEST_PASSWORDS.customer}`);
+  console.log(`   Trainer:  test-trainer@velocity.de  / ${TEST_PASSWORDS.trainer}`);
+  console.log(`   Admin:    test-admin@velocity.de    / ${TEST_PASSWORDS.admin}`);
 }
 
 // Delete in order to respect foreign key constraints
@@ -91,7 +95,7 @@ async function createCustomers(customerCount: number, trainingTypes: TrainingTyp
     data: {
       firstName: 'Test',
       lastName: 'Customer',
-      email: 'test-customer@velue.de',
+      email: 'test-customer@velocity.de',
       password: testCustomerPassword,
       birthDate: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
       phone: faker.phone.number(),
@@ -154,7 +158,7 @@ async function createTrainers(trainerCount: number, trainingTypes: TrainingType[
     data: {
       firstName: 'Test',
       lastName: 'Trainer',
-      email: 'test-trainer@velue.de',
+      email: 'test-trainer@velocity.de',
       password: testTrainerPassword,
       birthDate: faker.date.birthdate({ min: 25, max: 45, mode: 'age' }),
       phone: faker.phone.number(),
@@ -220,7 +224,7 @@ async function createAdmins(adminCount: number): Promise<BaseUser[]> {
     data: {
       firstName: 'Test',
       lastName: 'Admin',
-      email: 'test-admin@velue.de',
+      email: 'test-admin@velocity.de',
       password: testAdminPassword,
       birthDate: faker.date.birthdate({ min: 30, max: 55, mode: 'age' }),
       phone: faker.phone.number(),
@@ -262,27 +266,8 @@ async function createAdmins(adminCount: number): Promise<BaseUser[]> {
   return admins;
 }
 
-const SESSION_WINDOW_DAYS = 45; // Comfortably covers findUpcoming()'s 30-day window regardless of seed date.
-
 async function createTrainingSessions(trainers: BaseUser[]): Promise<number> {
-  console.log(`Creating training sessions for the next ${SESSION_WINDOW_DAYS} days...`);
-
-  // 7 daily time slots with training types
-  const dailySchedule = [
-    { time: TrainingTimeSlot.SLOT_0900, type: TrainingType.SPINNING_BEGINNER },
-    {
-      time: TrainingTimeSlot.SLOT_1030,
-      type: TrainingType.SPINNING_INTERMEDIATE,
-    },
-    { time: TrainingTimeSlot.SLOT_1200, type: TrainingType.SPINNING_ADVANCED },
-    { time: TrainingTimeSlot.SLOT_1600, type: TrainingType.SPINNING_HIIT },
-    { time: TrainingTimeSlot.SLOT_1730, type: TrainingType.SPINNING_ENDURANCE },
-    { time: TrainingTimeSlot.SLOT_1900, type: TrainingType.SPINNING_BEGINNER },
-    {
-      time: TrainingTimeSlot.SLOT_2030,
-      type: TrainingType.SPINNING_INTERMEDIATE,
-    },
-  ];
+  console.log(`Creating training sessions for the next ${DEMO_SESSION_WINDOW_DAYS} days...`);
 
   let sessionCount = 0;
   const today = new Date();
@@ -290,11 +275,11 @@ async function createTrainingSessions(trainers: BaseUser[]): Promise<number> {
 
   // Sessions are generated relative to seed time (not a fixed calendar month) so the
   // upcoming-sessions list is never empty, no matter when this script runs.
-  for (let dayOffset = 0; dayOffset < SESSION_WINDOW_DAYS; dayOffset++) {
+  for (let dayOffset = 0; dayOffset < DEMO_SESSION_WINDOW_DAYS; dayOffset++) {
     const date = new Date(today);
     date.setUTCDate(date.getUTCDate() + dayOffset);
 
-    for (const schedule of dailySchedule) {
+    for (const schedule of DEMO_DAILY_SCHEDULE) {
       const randomTrainer = trainers[Math.floor(Math.random() * trainers.length)];
 
       await prisma.trainingSession.create({

@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRoleGuard } from '../auth/guards/user-role.guard';
 import { CustomerOwnershipGuard } from '../auth/guards/customer-ownership.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@velue/shared-data-access';
+import { UserRole } from '@velocity/shared-data-access';
 import { CustomerProfileResponseDto } from './dto/customer-profile-response.dto';
 import { CoinsBalanceResponseDto } from './dto/coins-balance-response.dto';
 

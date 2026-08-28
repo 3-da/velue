@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { CoinsService } from './coins.service';
-import { UserRole } from '@velue/shared-data-access';
+import { UserRole } from '@velocity/shared-data-access';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRoleGuard } from '../auth/guards/user-role.guard';
 import { Roles } from '../auth/decorators/roles.decorator';

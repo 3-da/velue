@@ -6,16 +6,16 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 import { PasswordModule } from 'primeng/password';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../shared/services/auth.service';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-reset-password',
   imports: [ButtonModule, FloatLabelModule, PasswordModule, ReactiveFormsModule],
   template: `
-    <div class="flex w-full h-full justify-center items-center">
-      <div class="w-[90vw] sm:w-full sm:max-w-md rounded-lg shadow-lg p-8 bg-surface-900">
-        <h2 class="text-center text-2xl font-bold mb-8">Reset Password</h2>
+    <div class="mx-auto w-full max-w-md px-5 py-16">
+      <div class="surface-panel rounded p-8">
+        <h2 class="text-display mb-8 text-center text-3xl">Reset password</h2>
 
         @if (invalidToken()) {
           <div class="text-center">

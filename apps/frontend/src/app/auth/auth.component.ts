@@ -9,35 +9,31 @@ import {
 } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LoginRequest, PasswordValidator, RegisterCustomerRequest } from '@velue/shared-models';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { LoginRequest, PasswordValidator, RegisterCustomerRequest } from '@velocity/shared-models';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 import { AuthService } from '../../shared/services/auth.service';
-import { TabsModule } from 'primeng/tabs';
 import { PasswordModule } from 'primeng/password';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DatePicker } from 'primeng/datepicker';
 import { MessageService } from 'primeng/api';
-import { CommonModule } from '@angular/common';
 import { ForgotPasswordDialogComponent } from '../forgot-password-dialog/forgot-password-dialog.component';
+import { FieldErrorComponent } from '../../shared/components/field-error/field-error.component';
 
 @Component({
   selector: 'app-auth',
   imports: [
     ReactiveFormsModule,
-    TabsModule,
     FloatLabelModule,
     PasswordModule,
     InputTextModule,
-    DividerModule,
     ButtonModule,
     CheckboxModule,
     DatePicker,
-    CommonModule,
     ForgotPasswordDialogComponent,
+    FieldErrorComponent,
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
@@ -63,6 +59,16 @@ export class AuthComponent {
     { title: 'Log in', value: 0 },
     { title: 'Create account', value: 1 },
   ];
+
+  protected readonly signUpBenefits = [
+    '45-minute rides, seven days a week',
+    'Credits never expire and there is no membership',
+    'Free cancellation up to 24 hours before the ride',
+  ];
+
+  protected selectTab(value: number): void {
+    this.activeTab = value;
+  }
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -257,7 +263,7 @@ export class AuthComponent {
         this.messageService.add({
           severity: 'success',
           summary: 'Registration Successful',
-          detail: 'Welcome to Velué! Your account has been created.',
+          detail: 'Welcome to Velocity! Your account has been created.',
         });
       } else {
         this.messageService.add({
@@ -281,22 +287,6 @@ export class AuthComponent {
 
   protected closeForgotPasswordDialog(): void {
     this.showForgotPasswordDialog.set(false);
-  }
-
-  protected continueWithGoogle(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Coming Soon',
-      detail: 'This functionality will be added in future.',
-    });
-  }
-
-  protected continueWithFacebook(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Coming Soon',
-      detail: 'This functionality will be added in future.',
-    });
   }
 
   protected getFieldError(form: FormGroup, fieldName: string): string | null {

@@ -1,26 +1,42 @@
-<div class="w-3/4 sm:w-full mx-auto sm:mx-0 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 px-4 sm:px-8 items-stretch">
-  @for (coinsPackage of coinPackages(); track coinsPackage.price) {
-    <button
-      class="neon-card rounded-2xl sm:rounded-xl p-4 sm:p-12 text-center text-white flex flex-col justify-start h-full"
-      type="button"
-      (click)="purchaseCoins(coinsPackage)"
-    >
-      <h1
-        class="flex flex-nowrap items-center justify-center gap-2 text-3xl sm:text-5xl mb-2 text-primary font-bold">
-        <span>{{ coinsPackage.coins }}</span>
-        <i class="pi pi-bitcoin" style="font-size: 0.65em"></i>
-        <span>/</span>
-        <span>{{ coinsPackage.price }}</span>
-        <i class="pi pi-euro text-current" style="font-size: 0.65em"></i>
-      </h1>
+<div class="page-shell">
+  <header>
+    <p class="text-eyebrow">Pricing</p>
+    <h1 class="page-title text-display">Credit packs</h1>
+    <p class="page-lede">
+      One credit books one 45-minute ride. Credits never expire and there is no membership to cancel.
+    </p>
+  </header>
 
-      <h3 class="shadowed-text text-xl font-bold mb-2 text-white sm:text-lg">
-        {{ coinsPackage.name }}
-      </h3>
+  @if (isLoading()) {
+    <p class="packs__loading text-eyebrow">Loading packs…</p>
+  } @else if (sortedPackages().length === 0) {
+    <app-empty-state
+      body="Credit packs are being updated. Please try again in a moment."
+      headline="Nothing to show"
+      icon="pi-tag"
+    />
+  } @else {
+    <div class="packs">
+      @for (pack of sortedPackages(); track pack.id) {
+        <article class="pack" [class.is-featured]="pack.id === bestValuePackageId()">
+          @if (pack.id === bestValuePackageId()) {
+            <span class="pack__badge">Best value</span>
+          }
 
-      <p class="shadowed-text text-white/70 text-sm sm:text-sm m-0">
-        {{ coinsPackage.description }}
-      </p>
-    </button>
+          <p class="pack__name text-eyebrow">{{ pack.name }}</p>
+
+          <p class="pack__credits text-display text-numeric">
+            {{ pack.coins }}<span class="pack__credits-unit">credits</span>
+          </p>
+
+          <p class="pack__price text-numeric">{{ pack.price | currency: 'EUR' }}</p>
+          <p class="pack__unit text-numeric">{{ pack.price / pack.coins | currency: 'EUR' }} per ride</p>
+
+          <p class="pack__description">{{ pack.description }}</p>
+
+          <button class="pack__button" type="button" (click)="purchaseCoins(pack)">Buy pack</button>
+        </article>
+      }
+    </div>
   }
 </div>

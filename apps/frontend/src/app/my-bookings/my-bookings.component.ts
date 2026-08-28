@@ -1,46 +1,25 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  Signal,
-  signal,
-} from '@angular/core';
-import { TrainingSessionsService } from '../../shared/services/training-sessions.service';
-import { TrainingSessionWithDetails } from '@velue/shared-models';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { DatePipe, LowerCasePipe } from '@angular/common';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TrainingSessionTitlePipe } from '../../shared/pipes/training-session-title.pipe';
-import { TrainingStartTimePipe } from '../../shared/pipes/training-start-time.pipe';
-import { TabsModule } from 'primeng/tabs';
-import { Tag } from 'primeng/tag';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, Signal, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { MessageService } from 'primeng/api';
+import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { TrainingSessionWithDetails } from '@velocity/shared-models';
+import { TrainingSessionsService } from '../../shared/services/training-sessions.service';
 import { BookingService } from '../../shared/services/booking.service';
 import { UserService } from '../../shared/services/user.service';
-import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
 import { extractHttpErrorMessage } from '../../shared/utils/http-error-message';
+import { RideRowComponent } from '../../shared/components/ride-row/ride-row.component';
+import { RideDayTabsComponent } from '../../shared/components/ride-day-tabs/ride-day-tabs.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import {
   findUserBookingId,
-  getSessionAvailabilityStatus,
-  getSessionStatusColor,
-  isActiveBooking,
+  groupSessionsByRideDay,
+  hasUserBookedSession,
 } from '../../shared/utils/session-booking.utils';
 
 @Component({
   selector: 'app-my-bookings',
-  imports: [
-    DatePipe,
-    CardModule,
-    ButtonModule,
-    TabsModule,
-    TrainingSessionTitlePipe,
-    TrainingStartTimePipe,
-    Tag,
-    LowerCasePipe,
-  ],
+  imports: [DatePipe, RideRowComponent, RideDayTabsComponent, EmptyStateComponent],
   templateUrl: './my-bookings.component.html',
   styleUrl: './my-bookings.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,69 +41,51 @@ export class MyBookingsComponent {
     { initialValue: [] },
   );
 
-  // Filter sessions to show only user's bookings
   protected readonly myBookedSessions = computed(() => {
     const sessions = this.upcomingSessions();
     const user = this.userService.getCurrentUserSignal();
 
     if (!sessions || !user) return [];
 
-    return sessions.filter(session =>
-      session.bookings.some(booking => booking.userId === user.id && isActiveBooking(booking)),
-    );
+    return sessions.filter(session => hasUserBookedSession(session, user.id));
   });
 
-  protected readonly groupedSessionsByDate = computed(() => {
-    const sessions = this.myBookedSessions();
-    if (!sessions) return {};
+  protected readonly rideDays = computed(() => groupSessionsByRideDay(this.myBookedSessions()));
 
-    return sessions.reduce((groups: { [key: string]: TrainingSessionWithDetails[] }, session) => {
-      if (!session.date) return groups;
+  private readonly userSelectedDateKey = signal('');
 
-      const dateKey = new Date(session.date).toDateString();
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(session);
-      return groups;
-    }, {});
-  });
-
-  protected readonly uniqueDates = computed(() => {
-    const grouped = this.groupedSessionsByDate();
-    return Object.keys(grouped).map(dateKey => {
-      const sessions = grouped[dateKey];
-      return {
-        dateKey,
-        date: sessions[0]?.date,
-        sessions: sessions,
-      };
-    });
-  });
-
-  private readonly _selectedTab = signal('');
-
-  protected readonly selectedTab = computed(() => {
-    const userSelected = this._selectedTab();
+  protected readonly selectedDateKey = computed(() => {
+    const userSelected = this.userSelectedDateKey();
     if (userSelected) return userSelected;
 
-    const dates = this.uniqueDates();
-    return dates.length > 0 ? dates[0].dateKey : '';
+    return this.rideDays()[0]?.dateKey ?? '';
   });
 
-  protected setSelectedTab(dateKey: string): void {
-    this._selectedTab.set(dateKey);
+  protected selectDay(dateKey: string): void {
+    this.userSelectedDateKey.set(dateKey);
   }
 
-  protected getStatusColor(session: TrainingSessionWithDetails): 'secondary' | 'success' | 'danger' {
-    return getSessionStatusColor(session);
+  protected async cancelBooking(session: TrainingSessionWithDetails): Promise<void> {
+    const bookingId = this.findCurrentUserBookingId(session);
+    if (!bookingId) {
+      this.showError('No booking found for this session.');
+      return;
+    }
+
+    try {
+      await firstValueFrom(this.bookingService.cancelBooking(bookingId));
+      this.refreshData();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Booking Cancelled',
+        detail: 'Your booking has been cancelled successfully!',
+      });
+    } catch (error) {
+      this.showError(extractHttpErrorMessage(error, 'Failed to cancel the booking. Please try again.'));
+    }
   }
 
-  protected getAvailabilityStatus(session: TrainingSessionWithDetails): 'success' | 'warn' | 'danger' {
-    return getSessionAvailabilityStatus(session);
-  }
-
-  protected getUserBookingId(session: TrainingSessionWithDetails): string | null {
+  private findCurrentUserBookingId(session: TrainingSessionWithDetails): string | null {
     const user = this.userService.getCurrentUserSignal();
     return user ? findUserBookingId(session, user.id) : null;
   }
@@ -134,33 +95,7 @@ export class MyBookingsComponent {
     this.userService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  protected async cancelBooking(session: TrainingSessionWithDetails): Promise<void> {
-    const bookingId = this.getUserBookingId(session);
-    if (!bookingId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Cancellation Failed',
-        detail: 'No booking found for this session.',
-      });
-      return;
-    }
-
-    try {
-      await firstValueFrom(this.bookingService.cancelBooking(bookingId));
-
-      this.refreshData();
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Booking Cancelled',
-        detail: 'Your booking has been cancelled successfully!',
-      });
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Cancellation Failed',
-        detail: extractHttpErrorMessage(error, 'Failed to cancel the booking. Please try again.'),
-      });
-    }
+  private showError(detail: string): void {
+    this.messageService.add({ severity: 'error', summary: 'Cancellation Failed', detail });
   }
 }

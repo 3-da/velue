@@ -1,6 +1,6 @@
 import { IsString, MinLength } from 'class-validator';
-import { UpdatePasswordRequest } from '@velue/shared-models';
-import { PASSWORD_VALIDATION } from '@velue/shared-constants';
+import { UpdatePasswordRequest } from '@velocity/shared-models';
+import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
 
 export class UpdatePasswordDto implements UpdatePasswordRequest {
   @IsString()

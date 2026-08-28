@@ -1,6 +1,6 @@
 import { IsDate, IsIn, IsNumber, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
-import { BookingResponse } from '@velue/shared-models';
+import { BookingResponse } from '@velocity/shared-models';
 
 export class BookingDto implements BookingResponse {
   @IsUUID()

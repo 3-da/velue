@@ -1,32 +1,35 @@
-import { ChangeDetectionStrategy, Component, computed, HostListener, inject, signal, viewChild } from '@angular/core';
-import { BadgeModule } from 'primeng/badge';
-import { AvatarModule } from 'primeng/avatar';
-import { InputTextModule } from 'primeng/inputtext';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Ripple } from 'primeng/ripple';
-import { Menubar } from 'primeng/menubar';
-import { MenuItem } from 'primeng/api';
-import { Button } from 'primeng/button';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, viewChild } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Router } from '@angular/router';
 import { Menu } from 'primeng/menu';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { AuthService } from '../../shared/services/auth.service';
 import { UserService } from '../../shared/services/user.service';
 import { ChangePasswordDialogComponent } from '../change-password-dialog/change-password-dialog.component';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { environment } from '../../environments/environment';
+
+type PrimaryNavigationLink = {
+  label: string;
+  path: string;
+  isExact: boolean;
+};
+
+// Shared fixtures that anyone can sign into, so account-altering actions are
+// blocked on them to keep the public demo usable for the next visitor.
+const SHARED_DEMO_ACCOUNT_EMAILS = [
+  'test-customer@velocity.de',
+  'test-trainer@velocity.de',
+  'test-admin@velocity.de',
+];
 
 @Component({
   selector: 'app-menu',
   imports: [
-    Menubar,
-    BadgeModule,
-    AvatarModule,
-    InputTextModule,
-    Ripple,
-    CommonModule,
     NgOptimizedImage,
-    Button,
+    RouterLink,
+    RouterLinkActive,
     Menu,
     ChangePasswordDialogComponent,
     ConfirmDialog,
@@ -37,30 +40,28 @@ import { environment } from '../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MenuComponent {
-  private router = inject(Router);
-  protected authService = inject(AuthService);
-  protected userService = inject(UserService);
-  private messageService = inject(MessageService);
-  private confirmationService = inject(ConfirmationService);
+  private readonly router = inject(Router);
+  protected readonly authService = inject(AuthService);
+  protected readonly userService = inject(UserService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
 
-  protected readonly items = computed<MenuItem[]>(() => [
-    {
-      label: 'Home',
-      icon: 'pi pi-home',
-      command: (): void => this.navigateHome(),
-    },
-    {
-      label: 'Pricing',
-      icon: 'pi pi-euro',
-      command: (): void => this.navigatePricing(),
-    },
-    {
-      label: 'Book a Ride',
-      icon: 'pi pi-calendar-plus',
-      styleClass: 'book-ride-item',
-      command: (): void => this.navigateBooking(),
-    },
-  ]);
+  protected readonly primaryLinks: PrimaryNavigationLink[] = [
+    { label: 'Rides', path: '/training-sessions', isExact: false },
+    { label: 'Pricing', path: '/pricing', isExact: false },
+    { label: 'My bookings', path: '/my-bookings', isExact: false },
+  ];
+
+  private readonly profileMenu = viewChild<Menu>('profileMenu');
+  protected readonly isMobileNavOpen = signal(false);
+  protected readonly showChangePasswordDialog = signal(false);
+
+  protected readonly userInitials = computed(() => {
+    const user = this.userService.getCurrentUserSignal();
+    if (!user) return '';
+
+    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
+  });
 
   protected readonly profileMenuItems = computed<MenuItem[]>(() => [
     {
@@ -81,142 +82,104 @@ export class MenuComponent {
     {
       label: 'Delete Account',
       icon: 'pi pi-trash',
-      styleClass: 'text-red-500',
+      styleClass: 'text-red-400',
       command: (): void => this.confirmDeleteAccount(),
     },
-    {
-      separator: true,
-    },
+    { separator: true },
     {
       label: 'Sign Out',
       icon: 'pi pi-sign-out',
       command: (): void => this.logOut(),
     },
   ]);
-  private readonly windowWidth = signal(window.innerWidth);
-  protected readonly showChangePasswordDialog = signal(false);
 
-  protected readonly buttonSize = computed((): 'small' | 'large' => {
-    const width = this.windowWidth();
-    if (width < 640) return 'small';
-    return 'large';
-  });
-
-  protected readonly avatarSize = computed(() => {
-    const width = this.windowWidth();
-    return width < 640 ? 'normal' : 'large';
-  });
-  private readonly profileMenu = viewChild<Menu>('profileMenu');
-
-  protected navigateHome(): void {
-    void this.router.navigate(['/']);
+  protected toggleMobileNav(): void {
+    this.isMobileNavOpen.update(isOpen => !isOpen);
   }
 
-  protected navigatePricing(): void {
-    void this.router.navigate(['/pricing']);
-  }
-
-  protected navigateBooking(): void {
-    void this.router.navigate(['/training-sessions']);
-  }
-
-  protected navigateAuth(): void {
-    void this.router.navigate(['/auth']);
-  }
-
-  protected navigateMyBookings(): void {
-    void this.router.navigate(['/my-bookings']);
-  }
-
-  protected openChangePasswordDialog(): void {
-    const currentUser = this.userService.getCurrentUserSignal();
-    const demoEmails = ['test-customer@velue.de', 'test-trainer@velue.de', 'test-admin@velue.de'];
-    
-    if (currentUser && demoEmails.includes(currentUser.email)) {
-      this.showDemoAccountMessage();
-      return;
-    }
-    
-    this.showChangePasswordDialog.set(true);
-  }
-
-  protected showDemoAccountMessage(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Demo Account',
-      detail: 'Password changes are not available for demo accounts. These accounts are shared for testing purposes. Please register a new account to try the password change feature.',
-      life: 6000,
-    });
-  }
-
-  protected closeChangePasswordDialog(): void {
-    this.showChangePasswordDialog.set(false);
-  }
-
-  protected openEmailHistory(): void {
-    void this.router.navigate(['/email-history']);
+  protected closeMobileNav(): void {
+    this.isMobileNavOpen.set(false);
   }
 
   protected showProfileMenu(event: Event): void {
     this.profileMenu()?.toggle(event);
   }
 
+  protected navigateMyBookings(): void {
+    void this.router.navigate(['/my-bookings']);
+  }
+
+  protected openEmailHistory(): void {
+    void this.router.navigate(['/email-history']);
+  }
+
+  protected closeChangePasswordDialog(): void {
+    this.showChangePasswordDialog.set(false);
+  }
+
   protected logOut(): void {
     this.authService.logOut().subscribe();
   }
 
-  protected confirmDeleteAccount(): void {
-    const currentUser = this.userService.getCurrentUserSignal();
-    const demoEmails = ['test-customer@velue.de', 'test-trainer@velue.de', 'test-admin@velue.de'];
+  protected openChangePasswordDialog(): void {
+    if (this.isSignedInAsSharedDemoAccount()) {
+      this.showSharedDemoAccountNotice(
+        'Password changes are not available for demo accounts. These accounts are shared for testing purposes. Please register a new account to try the password change feature.',
+      );
+      return;
+    }
 
-    if (currentUser && demoEmails.includes(currentUser.email)) {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Demo Account',
-        detail: 'Account deletion is not available for demo accounts. These accounts are shared for testing purposes.',
-        life: 6000,
-      });
+    this.showChangePasswordDialog.set(true);
+  }
+
+  protected confirmDeleteAccount(): void {
+    if (this.isSignedInAsSharedDemoAccount()) {
+      this.showSharedDemoAccountNotice(
+        'Account deletion is not available for demo accounts. These accounts are shared for testing purposes.',
+      );
       return;
     }
 
     this.confirmationService.confirm({
       header: 'Delete Account',
-      message: 'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be permanently removed.',
+      message:
+        'Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be permanently removed.',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
-      accept: () => {
-        this.deleteAccount();
-      },
+      accept: () => this.deleteAccount(),
     });
   }
 
-  protected deleteAccount(): void {
+  private isSignedInAsSharedDemoAccount(): boolean {
+    const currentUser = this.userService.getCurrentUserSignal();
+    return currentUser !== null && SHARED_DEMO_ACCOUNT_EMAILS.includes(currentUser.email);
+  }
+
+  private showSharedDemoAccountNotice(detail: string): void {
+    this.messageService.add({ severity: 'info', summary: 'Demo Account', detail, life: 6000 });
+  }
+
+  private deleteAccount(): void {
     this.userService.deleteAccount().subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Account Deleted',
-          detail: 'Your account has been permanently deleted.',
-          life: 3000,
-        });
-        setTimeout(() => {
-          this.authService.logOut().subscribe();
-        }, 1000);
-      },
-      error: () => {
+      next: () => this.onAccountDeleted(),
+      error: () =>
         this.messageService.add({
           severity: 'error',
           summary: 'Delete Failed',
           detail: 'Failed to delete account. Please try again.',
           life: 5000,
-        });
-      },
+        }),
     });
   }
 
-  @HostListener('window:resize')
-  onResize(): void {
-    this.windowWidth.set(window.innerWidth);
+  private onAccountDeleted(): void {
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Account Deleted',
+      detail: 'Your account has been permanently deleted.',
+      life: 3000,
+    });
+    setTimeout(() => this.authService.logOut().subscribe(), 1000);
   }
 }

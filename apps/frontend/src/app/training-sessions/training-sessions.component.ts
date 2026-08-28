@@ -8,44 +8,30 @@ import {
   Signal,
   signal,
 } from '@angular/core';
-import { TrainingSessionsService } from '../../shared/services/training-sessions.service';
-import { TrainingSessionWithDetails } from '@velue/shared-models';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { DatePipe, LowerCasePipe } from '@angular/common';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { TrainingSessionTitlePipe } from '../../shared/pipes/training-session-title.pipe';
-import { TrainingStartTimePipe } from '../../shared/pipes/training-start-time.pipe';
-import { TabsModule } from 'primeng/tabs';
-import { Tag } from 'primeng/tag';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../shared/services/auth.service';
 import { MessageService } from 'primeng/api';
+import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { TrainingSessionWithDetails } from '@velocity/shared-models';
+import { TrainingSessionsService } from '../../shared/services/training-sessions.service';
+import { AuthService } from '../../shared/services/auth.service';
 import { BookingService } from '../../shared/services/booking.service';
 import { UserService } from '../../shared/services/user.service';
 import { PaymentService } from '../../shared/services/payment.service';
-import { firstValueFrom, startWith, Subject, switchMap } from 'rxjs';
 import { extractHttpErrorMessage } from '../../shared/utils/http-error-message';
+import { RideRowComponent } from '../../shared/components/ride-row/ride-row.component';
+import { RideDayTabsComponent } from '../../shared/components/ride-day-tabs/ride-day-tabs.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import {
   findUserBookingId,
-  getSessionAvailabilityStatus,
-  getSessionStatusColor,
+  groupSessionsByRideDay,
   hasUserBookedSession,
-  isSessionFull,
 } from '../../shared/utils/session-booking.utils';
 
 @Component({
   selector: 'app-training-sessions',
-  imports: [
-    DatePipe,
-    CardModule,
-    ButtonModule,
-    TabsModule,
-    TrainingSessionTitlePipe,
-    TrainingStartTimePipe,
-    Tag,
-    LowerCasePipe,
-  ],
+  imports: [DatePipe, RideRowComponent, RideDayTabsComponent, EmptyStateComponent],
   templateUrl: './training-sessions.component.html',
   styleUrl: './training-sessions.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -74,36 +60,17 @@ export class TrainingSessionsComponent {
     { initialValue: [] },
   );
 
-  protected readonly groupedSessionsByDate = computed(() => {
-    const sessions = this.upcomingSessions();
-    if (!sessions) return {};
+  protected readonly rideDays = computed(() => groupSessionsByRideDay(this.upcomingSessions() ?? []));
 
-    return sessions.reduce((groups: { [key: string]: TrainingSessionWithDetails[] }, session) => {
-      if (!session.date) return groups;
-
-      const dateKey = new Date(session.date).toDateString();
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(session);
-      return groups;
-    }, {});
-  });
-
-  protected readonly uniqueDates = computed(() => {
-    const grouped = this.groupedSessionsByDate();
-    return Object.keys(grouped).map(dateKey => {
-      const sessions = grouped[dateKey];
-      return {
-        dateKey,
-        date: sessions[0]?.date,
-        sessions: sessions,
-      };
-    });
-  });
-
-  private readonly _selectedTab = signal('');
+  private readonly userSelectedDateKey = signal('');
   private paymentProcessed = false;
+
+  protected readonly selectedDateKey = computed(() => {
+    const userSelected = this.userSelectedDateKey();
+    if (userSelected) return userSelected;
+
+    return this.rideDays()[0]?.dateKey ?? '';
+  });
 
   // Credit the coins once when returning from Stripe. The guard stops a re-emit
   // of queryParams from processing the same session twice before navigation clears it.
@@ -118,40 +85,73 @@ export class TrainingSessionsComponent {
     this.clearQueryParams();
   });
 
-  protected readonly selectedTab = computed(() => {
-    const userSelected = this._selectedTab();
-    if (userSelected) return userSelected;
+  protected selectDay(dateKey: string): void {
+    this.userSelectedDateKey.set(dateKey);
+  }
 
-    const dates = this.uniqueDates();
-    return dates.length > 0 ? dates[0].dateKey : '';
-  });
+  protected isBookedByCurrentUser(session: TrainingSessionWithDetails): boolean {
+    const user = this.userService.getCurrentUserSignal();
+    return user ? hasUserBookedSession(session, user.id) : false;
+  }
+
+  protected async bookSession(trainingSessionId: string): Promise<void> {
+    if (!this.authService.isAuthenticated()) {
+      this.showAuthenticationRequiredNotice();
+      return;
+    }
+
+    try {
+      // The backend derives the booking owner from the auth token, so the
+      // client only needs to name the session.
+      await firstValueFrom(this.bookingService.createBooking(trainingSessionId));
+      this.refreshData();
+      this.showSuccess('Booking Confirmed', 'Your training session has been booked successfully!');
+    } catch (error) {
+      this.showError('Booking Failed', error, 'Failed to book the session. Please try again.');
+    }
+  }
+
+  protected async cancelBooking(session: TrainingSessionWithDetails): Promise<void> {
+    const bookingId = this.findCurrentUserBookingId(session);
+    if (!bookingId) {
+      this.showError('Cancellation Failed', null, 'No booking found for this session.');
+      return;
+    }
+
+    try {
+      await firstValueFrom(this.bookingService.cancelBooking(bookingId));
+      this.refreshData();
+      this.showSuccess('Booking Cancelled', 'Your booking has been cancelled successfully!');
+    } catch (error) {
+      this.showError('Cancellation Failed', error, 'Failed to cancel the booking. Please try again.');
+    }
+  }
+
+  private findCurrentUserBookingId(session: TrainingSessionWithDetails): string | null {
+    const user = this.userService.getCurrentUserSignal();
+    return user ? findUserBookingId(session, user.id) : null;
+  }
 
   private processPaymentSuccess(sessionId: string): void {
     this.paymentService
       .processPaymentSuccess(sessionId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: result => {
-          if (result.success && result.coinsAdded) {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Payment Successful!',
-              detail: `${result.coinsAdded} coins added to your account. You can now book training sessions!`,
-            });
-
-            // Refresh user data to show new coin balance
-            this.userService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
-          }
-        },
-        error: error => {
-          console.error('Payment processing error:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Payment Processing Error',
-            detail: 'Payment was successful but there was an issue adding coins. Please contact support.',
-          });
-        },
+        next: result => this.onPaymentProcessed(result.success, result.coinsAdded),
+        error: () =>
+          this.showError(
+            'Payment Processing Error',
+            null,
+            'Payment was successful but there was an issue adding coins. Please contact support.',
+          ),
       });
+  }
+
+  private onPaymentProcessed(isSuccessful: boolean, coinsAdded: number | undefined): void {
+    if (!isSuccessful || !coinsAdded) return;
+
+    this.showSuccess('Payment Successful!', `${coinsAdded} credits added to your account. You can now book rides!`);
+    this.userService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   private clearQueryParams(): void {
@@ -162,100 +162,25 @@ export class TrainingSessionsComponent {
     });
   }
 
-  protected setSelectedTab(dateKey: string): void {
-    this._selectedTab.set(dateKey);
-  }
-
-  protected getStatusColor(session: TrainingSessionWithDetails): 'secondary' | 'success' | 'danger' {
-    return getSessionStatusColor(session);
-  }
-
-  protected getAvailabilityStatus(session: TrainingSessionWithDetails): 'success' | 'warn' | 'danger' {
-    return getSessionAvailabilityStatus(session);
-  }
-
-  protected isSessionFull(session: TrainingSessionWithDetails): boolean {
-    return isSessionFull(session);
-  }
-
-  protected hasUserBookedSession(session: TrainingSessionWithDetails): boolean {
-    const user = this.userService.getCurrentUserSignal();
-    return user ? hasUserBookedSession(session, user.id) : false;
-  }
-
-  protected getUserBookingId(session: TrainingSessionWithDetails): string | null {
-    const user = this.userService.getCurrentUserSignal();
-    return user ? findUserBookingId(session, user.id) : null;
-  }
-
   private refreshData(): void {
-    // Trigger refresh of training sessions
     this.refreshTrigger.next();
-    // Refresh user data to update coins
     this.userService.getCurrentUser().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
-  protected async bookSession(trainingSessionId: string): Promise<void> {
-    // Check if user is authenticated
-    if (!this.authService.isAuthenticated()) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Authentication Required',
-        detail: 'Please sign in to book a session.',
-      });
-      return;
-    }
-
-    try {
-      // The backend derives the booking owner from the auth token, so the
-      // client only needs to name the session.
-      await firstValueFrom(this.bookingService.createBooking(trainingSessionId));
-
-      // Refresh data to update UI
-      this.refreshData();
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Booking Confirmed',
-        detail: `Your training session has been booked successfully!`,
-      });
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Booking Failed',
-        detail: extractHttpErrorMessage(error, 'Failed to book the session. Please try again.'),
-      });
-    }
+  private showAuthenticationRequiredNotice(): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Authentication Required',
+      detail: 'Please sign in to book a ride.',
+    });
   }
 
-  protected async cancelBooking(session: TrainingSessionWithDetails): Promise<void> {
-    const bookingId = this.getUserBookingId(session);
-    if (!bookingId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Cancellation Failed',
-        detail: 'No booking found for this session.',
-      });
-      return;
-    }
+  private showSuccess(summary: string, detail: string): void {
+    this.messageService.add({ severity: 'success', summary, detail });
+  }
 
-    try {
-      await firstValueFrom(this.bookingService.cancelBooking(bookingId));
-
-      // Refresh data to update UI
-      this.refreshData();
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Booking Cancelled',
-        detail: 'Your booking has been cancelled successfully!',
-      });
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Cancellation Failed',
-        detail: extractHttpErrorMessage(error, 'Failed to cancel the booking. Please try again.'),
-      });
-    }
+  private showError(summary: string, error: unknown, fallbackDetail: string): void {
+    const detail = error ? extractHttpErrorMessage(error, fallbackDetail) : fallbackDetail;
+    this.messageService.add({ severity: 'error', summary, detail });
   }
 }

@@ -1,8 +1,8 @@
 import { type BrowserContext, expect, type Locator, type Page, test } from '@playwright/test';
-import { PrismaClient } from '@velue/shared-data-access';
+import { PrismaClient } from '@velocity/shared-data-access';
 
 const API_URL = process.env['API_URL'] || 'http://localhost:3000/api';
-const TEST_CUSTOMER = { email: 'test-customer@velue.de', password: 'Customer2024!' };
+const TEST_CUSTOMER = { email: 'test-customer@velocity.de', password: 'Customer2024!' };
 const prisma = new PrismaClient();
 
 type UpcomingSession = {
@@ -16,7 +16,7 @@ type UpcomingSession = {
 // is guarded and the backend only trusts real signed JWTs in real cookie names, so
 // a fake token (the old approach here) can no longer reach this page at all.
 async function loginAsSeededCustomer(context: BrowserContext): Promise<void> {
-  await context.addInitScript(() => window.localStorage.setItem('velue_auth', '1'));
+  await context.addInitScript(() => window.localStorage.setItem('velocity_auth', '1'));
   await context.request.post(`${API_URL}/auth/login`, { data: TEST_CUSTOMER });
 }
 
@@ -122,7 +122,7 @@ test.describe('Training Sessions Booking Flow', () => {
 
   test('should redirect unauthenticated users to the login page', async ({ page, context }) => {
     await context.clearCookies();
-    await page.evaluate(() => window.localStorage.removeItem('velue_auth'));
+    await page.evaluate(() => window.localStorage.removeItem('velocity_auth'));
 
     await page.goto('/training-sessions');
 

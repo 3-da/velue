@@ -1,12 +1,31 @@
-import { TrainingSessionWithDetails } from '@velue/shared-models';
+import { TrainingSessionWithDetails } from '@velocity/shared-models';
 
 type SessionBooking = TrainingSessionWithDetails['bookings'][number];
+
+const ALMOST_FULL_OCCUPANCY_PERCENT = 80;
+const LAST_SPOTS_CALLOUT_THRESHOLD = 3;
+
+export type RideDay = {
+  dateKey: string;
+  date: Date;
+  sessions: TrainingSessionWithDetails[];
+};
 
 // A booking only occupies a seat while it is PENDING or CONFIRMED. CANCELLED
 // bookings must never count toward capacity — the single source of truth for
 // "does this booking still hold a seat".
 export function isActiveBooking(booking: Pick<SessionBooking, 'status'>): boolean {
   return booking.status === 'PENDING' || booking.status === 'CONFIRMED';
+}
+
+export function countActiveBookingsForSession(session: TrainingSessionWithDetails): number {
+  return session.bookings?.filter(isActiveBooking).length ?? 0;
+}
+
+export function getSessionOccupancyPercent(session: TrainingSessionWithDetails): number {
+  if (session.maxParticipants <= 0) return 0;
+
+  return Math.round((countActiveBookingsForSession(session) / session.maxParticipants) * 100);
 }
 
 export function getSessionStatusColor(session: TrainingSessionWithDetails): 'secondary' | 'success' | 'danger' {
@@ -21,7 +40,7 @@ export function getSessionStatusColor(session: TrainingSessionWithDetails): 'sec
 }
 
 export function getSessionAvailabilityStatus(session: TrainingSessionWithDetails): 'success' | 'warn' | 'danger' {
-  const occupancyRate = countActiveBookings(session) / session.maxParticipants;
+  const occupancyRate = countActiveBookingsForSession(session) / session.maxParticipants;
 
   if (occupancyRate <= 0.5) return 'success';
   if (occupancyRate <= 0.8) return 'warn';
@@ -29,7 +48,7 @@ export function getSessionAvailabilityStatus(session: TrainingSessionWithDetails
 }
 
 export function isSessionFull(session: TrainingSessionWithDetails): boolean {
-  return countActiveBookings(session) >= session.maxParticipants;
+  return countActiveBookingsForSession(session) >= session.maxParticipants;
 }
 
 export function findUserBookingId(session: TrainingSessionWithDetails, userId: string): string | null {
@@ -41,6 +60,49 @@ export function hasUserBookedSession(session: TrainingSessionWithDetails, userId
   return findUserBookingId(session, userId) !== null;
 }
 
-function countActiveBookings(session: TrainingSessionWithDetails): number {
-  return session.bookings?.filter(isActiveBooking).length ?? 0;
+export function groupSessionsByRideDay(sessions: readonly TrainingSessionWithDetails[]): RideDay[] {
+  const daysByDateKey = new Map<string, RideDay>();
+
+  for (const session of sessions) {
+    if (!session.date) continue;
+
+    const date = new Date(session.date);
+    const dateKey = date.toDateString();
+    const existingDay = daysByDateKey.get(dateKey);
+
+    if (existingDay) existingDay.sessions.push(session);
+    else daysByDateKey.set(dateKey, { dateKey, date, sessions: [session] });
+  }
+
+  return [...daysByDateKey.values()];
+}
+
+export function countRemainingSpotsForSession(session: TrainingSessionWithDetails): number {
+  return Math.max(session.maxParticipants - countActiveBookingsForSession(session), 0);
+}
+
+export function isRideAlmostFull(session: TrainingSessionWithDetails): boolean {
+  return !isSessionFull(session) && getSessionOccupancyPercent(session) >= ALMOST_FULL_OCCUPANCY_PERCENT;
+}
+
+/**
+ * Short urgency note rendered under a ride's capacity meter, or null when the
+ * ride is unremarkable and should stay quiet.
+ *
+ * Exact counts are reserved for the last few bikes so the number stays truthful
+ * rather than pressuring; a ride with room to spare says nothing at all.
+ */
+export function getRideAvailabilityLabel(session: TrainingSessionWithDetails): string | null {
+  if (session.status !== 'SCHEDULED') return null;
+
+  if (isSessionFull(session)) return 'Sold out';
+
+  const spotsLeft = countRemainingSpotsForSession(session);
+  if (spotsLeft <= LAST_SPOTS_CALLOUT_THRESHOLD) {
+    return spotsLeft === 1 ? '1 spot left' : `${spotsLeft} spots left`;
+  }
+
+  if (isRideAlmostFull(session)) return 'Almost full';
+
+  return null;
 }

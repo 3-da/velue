@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CoinsPackageResponse } from '@velue/shared-models';
+import { CoinsPackageResponse } from '@velocity/shared-models';
 import { environment } from '../../environments/environment';
 
 @Injectable({

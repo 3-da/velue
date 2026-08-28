@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { UserResponse } from '@velue/shared-models';
+import { UserResponse } from '@velocity/shared-models';
 import { environment } from '../../environments/environment';
 
 @Injectable({

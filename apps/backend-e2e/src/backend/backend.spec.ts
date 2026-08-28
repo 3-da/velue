@@ -6,7 +6,7 @@ describe('GET /api', () => {
 
     expect(res.status).toBe(200);
     expect(res.data).toEqual({
-      message: 'Velué API',
+      message: 'Velocity API',
       endpoints: ['/api/health', '/api/auth', '/api/user', '/api/coins', '/api/training-sessions'],
     });
   });

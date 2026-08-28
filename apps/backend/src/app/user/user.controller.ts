@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../auth/decorators/user.decorator';
-import { UserWithAllRoles } from '@velue/shared-models';
+import { UserWithAllRoles } from '@velocity/shared-models';
 import { UserService } from './user.service';
 import { UserResponseDto } from './dto/user-response.dto';
 

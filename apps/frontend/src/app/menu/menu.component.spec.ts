@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MessageService } from 'primeng/api';
+import { provideRouter } from '@angular/router';
 import { MenuComponent } from './menu.component';
 
 describe('Menu', () => {
@@ -11,7 +12,7 @@ describe('Menu', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MenuComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), MessageService],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), MessageService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MenuComponent);

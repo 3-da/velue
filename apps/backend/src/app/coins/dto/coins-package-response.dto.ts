@@ -1,4 +1,4 @@
-import { CoinsPackage } from '@velue/shared-data-access';
+import { CoinsPackage } from '@velocity/shared-data-access';
 
 export class CoinsPackageResponseDto {
   id: string;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateTrainingSessionStatus } from '@velue/shared-models';
+import { UpdateTrainingSessionStatus } from '@velocity/shared-models';
 import { PrismaService } from '../prisma/prisma.service';
-import { TrainingSession, TrainingTimeSlot } from '@velue/shared-data-access';
+import { TrainingSession, TrainingTimeSlot } from '@velocity/shared-data-access';
 
 const includeTrainer = {
   include: {

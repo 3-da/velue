@@ -18,11 +18,11 @@ export class EmailService {
   private readonly isProduction: boolean;
   private readonly transporter: Transporter | null = null;
   private readonly smtpFrom: string;
-  private readonly demoAccounts = ['test-customer@velue.de', 'test-trainer@velue.de', 'test-admin@velue.de'];
+  private readonly demoAccounts = ['test-customer@velocity.de', 'test-trainer@velocity.de', 'test-admin@velocity.de'];
 
   constructor(private readonly configService: ConfigService) {
     this.isProduction = this.configService.get('NODE_ENV') === 'production';
-    this.smtpFrom = this.configService.get('SMTP_FROM') || 'noreply@velue.de';
+    this.smtpFrom = this.configService.get('SMTP_FROM') || 'noreply@velocity.de';
 
     // Initialize nodemailer transporter
     const smtpHost = this.configService.get('SMTP_HOST');
@@ -93,7 +93,7 @@ export class EmailService {
    * Send password changed confirmation email
    */
   async sendPasswordChangedEmail(userEmail: string, userName: string): Promise<void> {
-    const subject = 'Password Changed - Velué Fitness';
+    const subject = 'Password Changed - Velocity';
     const timestamp = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
 
     const htmlContent = `
@@ -103,8 +103,8 @@ export class EmailService {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.8; color: #000000; background-color: #ffffff; margin: 0; padding: 0; }
           .container { max-width: 600px; margin: 0 auto; padding: 0; }
-          .header { background-color: #f8b500; color: #000000; padding: 30px; text-align: center; }
-          .header h1 { margin: 0; color: #000000; font-size: 28px; }
+          .header { background-color: #0b0b0c; color: #d6ff3e; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #d6ff3e; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
           .content { padding: 30px; background-color: #ffffff; }
           .content p { margin-bottom: 15px; color: #000000; }
           .content h2 { margin-bottom: 20px; color: #000000; font-size: 24px; }
@@ -121,37 +121,37 @@ export class EmailService {
           .warning strong { color: #000000; }
           .warning p { margin-top: 10px; margin-bottom: 0; color: #000000; }
           .section-title { font-weight: bold; margin-top: 25px; margin-bottom: 10px; color: #000000; }
-          a { color: #f8b500; text-decoration: none; }
+          a { color: #111111; font-weight: bold; text-decoration: underline; }
         </style>
       </head>
       <body>
         <div class="container">
           <div class="header">
-            <h1>Velué Fitness</h1>
+            <h1>Velocity</h1>
           </div>
           <div class="content">
             <h2>Password Changed</h2>
 
-            <p>Hallo ${userName},</p>
+            <p>Hi ${userName},</p>
 
             <p>Your password was successfully changed on <strong>${timestamp}</strong>.</p>
 
             <div class="warning">
               <strong>⚠️ Security Notice</strong>
-              <p>If you did not make this change, please contact our support team immediately at <a href="mailto:support@velue.de">support@velue.de</a>.</p>
+              <p>If you did not make this change, please contact our support team immediately at <a href="mailto:support@velocity.de">support@velocity.de</a>.</p>
             </div>
 
             <p class="section-title">For your security, we recommend:</p>
             <ul>
               <li>Never share your password with anyone</li>
-              <li>Use a unique password for Velué Fitness</li>
+              <li>Use a unique password for Velocity</li>
               <li>Change your password regularly</li>
             </ul>
 
-            <p style="margin-top: 30px;">Best regards,<br>Your Velué Fitness Team</p>
+            <p style="margin-top: 30px;">Best regards,<br>Your Velocity Team</p>
           </div>
           <div class="footer">
-            <p>© 2024 Velué Fitness GmbH | Berlin, Germany</p>
+            <p>© 2026 Velocity Indoor Cycling | Berlin, Germany</p>
             <p>This is an automated message. Please do not reply to this email.</p>
           </div>
         </div>
@@ -160,25 +160,25 @@ export class EmailService {
     `;
 
     const textContent = `
-Velué Fitness - Password Changed
+Velocity - Password Changed
 
-Hallo ${userName},
+Hi ${userName},
 
 Your password was successfully changed on ${timestamp}.
 
 ⚠️ SECURITY NOTICE
-If you did not make this change, please contact our support team immediately at support@velue.de.
+If you did not make this change, please contact our support team immediately at support@velocity.de.
 
 For your security, we recommend:
 - Never share your password with anyone
-- Use a unique password for Velué Fitness
+- Use a unique password for Velocity
 - Change your password regularly
 
 Best regards,
-Your Velué Fitness Team
+Your Velocity Team
 
 ---
-© 2024 Velué Fitness GmbH | Berlin, Germany
+© 2026 Velocity Indoor Cycling | Berlin, Germany
 This is an automated message. Please do not reply to this email.
     `;
 
@@ -189,7 +189,7 @@ This is an automated message. Please do not reply to this email.
    * Send password reset email with token
    */
   async sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string): Promise<void> {
-    const subject = 'Password Reset - Velué Fitness';
+    const subject = 'Password Reset - Velocity';
     const resetUrl = `${this.configService.get('FRONTEND_URL')}/reset-password?token=${resetToken}`;
     const timestamp = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
 
@@ -200,8 +200,8 @@ This is an automated message. Please do not reply to this email.
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.8; color: #000000; background-color: #ffffff; margin: 0; padding: 0; }
           .container { max-width: 600px; margin: 0 auto; padding: 0; }
-          .header { background-color: #f8b500; color: #000000; padding: 30px; text-align: center; }
-          .header h1 { margin: 0; color: #000000; font-size: 28px; }
+          .header { background-color: #0b0b0c; color: #d6ff3e; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #d6ff3e; font-size: 28px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
           .content { padding: 30px; background-color: #ffffff; }
           .content p { margin-bottom: 15px; color: #000000; }
           .content h2 { margin-bottom: 20px; color: #000000; font-size: 24px; }
@@ -209,10 +209,10 @@ This is an automated message. Please do not reply to this email.
           .button {
             display: inline-block;
             padding: 15px 30px;
-            background-color: #f8b500;
-            color: #000000;
+            background-color: #d6ff3e;
+            color: #0b0b0c;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 2px;
             font-weight: bold;
             margin: 20px 0;
           }
@@ -229,12 +229,12 @@ This is an automated message. Please do not reply to this email.
       <body>
         <div class="container">
           <div class="header">
-            <h1>Velué Fitness</h1>
+            <h1>Velocity</h1>
           </div>
           <div class="content">
             <h2>Password Reset Request</h2>
 
-            <p>Hallo ${userName},</p>
+            <p>Hi ${userName},</p>
 
             <p>We received a request to reset your password on <strong>${timestamp}</strong>.</p>
 
@@ -247,10 +247,10 @@ This is an automated message. Please do not reply to this email.
               <p>If you did not request this password reset, please ignore this email. Your password will remain unchanged.</p>
             </div>
 
-            <p>Best regards,<br>Your Velué Fitness Team</p>
+            <p>Best regards,<br>Your Velocity Team</p>
           </div>
           <div class="footer">
-            <p>© 2024 Velué Fitness GmbH | Berlin, Germany</p>
+            <p>© 2026 Velocity Indoor Cycling | Berlin, Germany</p>
             <p>This is an automated message. Please do not reply to this email.</p>
           </div>
         </div>
@@ -259,9 +259,9 @@ This is an automated message. Please do not reply to this email.
     `;
 
     const textContent = `
-Velué Fitness - Password Reset Request
+Velocity - Password Reset Request
 
-Hallo ${userName},
+Hi ${userName},
 
 We received a request to reset your password on ${timestamp}.
 
@@ -273,10 +273,10 @@ ${resetUrl}
 If you did not request this password reset, please ignore this email. Your password will remain unchanged.
 
 Best regards,
-Your Velué Fitness Team
+Your Velocity Team
 
 ---
-© 2024 Velué Fitness GmbH | Berlin, Germany
+© 2026 Velocity Indoor Cycling | Berlin, Germany
 This is an automated message. Please do not reply to this email.
     `;
 

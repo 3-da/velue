@@ -1,4 +1,4 @@
-import {RegisterCustomerResponse, TokenPair} from '@velue/shared-models';
+import {RegisterCustomerResponse, TokenPair} from '@velocity/shared-models';
 
 export class RegisterCustomerResponseDto implements RegisterCustomerResponse {
   user: {

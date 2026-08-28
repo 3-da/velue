@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
-import { BookingResponse, CreateBookingRequest } from '@velue/shared-models';
+import { BookingResponse, CreateBookingRequest } from '@velocity/shared-models';
 import { environment } from '../../environments/environment';
 
 @Injectable({

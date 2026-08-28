@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../../user/user.service';
-import { JwtPayload, UserWithAllRoles } from '@velue/shared-models';
+import { JwtPayload, UserWithAllRoles } from '@velocity/shared-models';
 import { Request } from 'express';
 
 @Injectable()

@@ -1,17 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, SecurityContext, Signal, signal, WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { EmailData, EmailHistoryService } from '../../shared/services/email-history.service';
-import { CardModule } from 'primeng/card';
 import { DatePipe } from '@angular/common';
-import { Tag } from 'primeng/tag';
 import { Dialog } from 'primeng/dialog';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Button } from 'primeng/button';
 import { MessageService } from 'primeng/api';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-email-history',
-  imports: [CardModule, DatePipe, Tag, Dialog, Button],
+  imports: [DatePipe, Dialog, Button, EmptyStateComponent],
   templateUrl: './email-history.component.html',
   styleUrl: './email-history.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
