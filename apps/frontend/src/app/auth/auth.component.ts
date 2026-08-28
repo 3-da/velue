@@ -10,7 +10,7 @@ import {
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LoginRequest, PasswordValidator, RegisterCustomerRequest } from '@velocity/shared-models';
-import { PASSWORD_VALIDATION } from '@velocity/shared-constants';
+import { DEMO_CUSTOMER_CREDENTIALS, PASSWORD_VALIDATION } from '@velocity/shared-constants';
 import { AuthService } from '../../shared/services/auth.service';
 import { PasswordModule } from 'primeng/password';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -192,32 +192,39 @@ export class AuthComponent {
   }
 
   protected async onLogin(): Promise<void> {
-    if (this.loginForm.valid) {
-      const loginRequest: LoginRequest = {
-        email: this.loginForm.value.email,
-        password: this.loginForm.value.password,
-      };
-
-      const result = await this.authService.loginWithNavigation(loginRequest);
-
-      if (result.success) {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Login Successful',
-          detail: 'Welcome back!',
-        });
-      } else {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Login Failed',
-          detail: result.message || 'Invalid email or password. Please try again.',
-        });
-      }
-    } else {
+    if (!this.loginForm.valid) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Invalid Form',
         detail: 'Please fill in all required fields correctly.',
+      });
+      return;
+    }
+
+    await this.login({
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password,
+    });
+  }
+
+  protected async onDemoLogin(): Promise<void> {
+    await this.login(DEMO_CUSTOMER_CREDENTIALS);
+  }
+
+  private async login(loginRequest: LoginRequest): Promise<void> {
+    const result = await this.authService.loginWithNavigation(loginRequest);
+
+    if (result.success) {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Login Successful',
+        detail: 'Welcome back!',
+      });
+    } else {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Login Failed',
+        detail: result.message || 'Invalid email or password. Please try again.',
       });
     }
   }

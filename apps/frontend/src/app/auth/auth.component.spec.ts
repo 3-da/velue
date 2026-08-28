@@ -4,7 +4,8 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MessageService } from 'primeng/api';
 import { AuthComponent } from './auth.component';
 import { FormControl, FormGroup } from '@angular/forms';
-import { expect } from 'vitest';
+import { DEMO_CUSTOMER_CREDENTIALS } from '@velocity/shared-constants';
+import { expect, vi } from 'vitest';
 
 describe('Auth', () => {
   let component: AuthComponent;
@@ -87,6 +88,32 @@ describe('Auth', () => {
       form.patchValue({ password: 'password123', confirmPassword: 'password123' });
       form.updateValueAndValidity();
       expect(form.get('confirmPassword')?.hasError('passwordMismatch')).toBe(false);
+    });
+  });
+
+  describe('onDemoLogin', () => {
+    it('logs in with the seeded demo customer credentials, not the login form', async () => {
+      const authService = (component as any).authService;
+      const loginSpy = vi.spyOn(authService, 'loginWithNavigation').mockResolvedValue({ success: true });
+
+      await (component as any).onDemoLogin();
+
+      expect(loginSpy).toHaveBeenCalledWith(DEMO_CUSTOMER_CREDENTIALS);
+      expect(loginSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows an error toast when the demo account itself is rejected', async () => {
+      const authService = (component as any).authService;
+      vi.spyOn(authService, 'loginWithNavigation').mockResolvedValue({
+        success: false,
+        message: 'Invalid credentials',
+      });
+      const messageService = (component as any).messageService;
+      const toastSpy = vi.spyOn(messageService, 'add');
+
+      await (component as any).onDemoLogin();
+
+      expect(toastSpy).toHaveBeenCalledWith(expect.objectContaining({ severity: 'error' }));
     });
   });
 });

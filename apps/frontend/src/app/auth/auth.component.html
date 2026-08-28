@@ -10,6 +10,13 @@
   </aside>
 
   <div class="auth__panel">
+    <div class="auth__demo">
+      <p class="auth__demo-text">Just evaluating? No signup needed.</p>
+      <p-button label="Continue as demo customer" type="button" [style]="{ width: '100%' }" (onClick)="onDemoLogin()" />
+    </div>
+
+    <div class="auth__divider"><span>or log in / create an account</span></div>
+
     <div aria-label="Account access" class="auth__switch" role="group">
       @for (tab of tabs; track tab.value) {
         <button

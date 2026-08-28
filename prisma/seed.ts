@@ -9,6 +9,7 @@ import {
 } from '@velocity/shared-data-access';
 import {
   COINS_PACKAGES,
+  DEMO_CUSTOMER_CREDENTIALS,
   DEMO_DAILY_SCHEDULE,
   DEMO_SESSION_WINDOW_DAYS,
   TRAINING_SESSION,
@@ -16,9 +17,11 @@ import {
 
 const prisma = new PrismaClient();
 
-// TEST ACCOUNT PASSWORDS - Used for development/testing only
+// TEST ACCOUNT PASSWORDS - Used for development/testing only. The customer
+// account also backs the frontend's "Continue as demo customer" button, so
+// its email/password live in DEMO_CUSTOMER_CREDENTIALS instead of here.
 const TEST_PASSWORDS = {
-  customer: 'Customer2024!',
+  customer: DEMO_CUSTOMER_CREDENTIALS.password,
   trainer: 'Trainer2024!',
   admin: 'Admin2024!',
 } as const;
@@ -68,7 +71,7 @@ async function main(): Promise<void> {
     `📊 Summary: ${customers.length} customers, ${trainers.length} trainers, ${admins.length} admins, ${coinsPackages.length} coins packages, ${sessionCount} training sessions, ${bookingCount} bookings`,
   );
   console.log('🔑 Test accounts:');
-  console.log(`   Customer: test-customer@velocity.de / ${TEST_PASSWORDS.customer}`);
+  console.log(`   Customer: ${DEMO_CUSTOMER_CREDENTIALS.email} / ${TEST_PASSWORDS.customer}`);
   console.log(`   Trainer:  test-trainer@velocity.de  / ${TEST_PASSWORDS.trainer}`);
   console.log(`   Admin:    test-admin@velocity.de    / ${TEST_PASSWORDS.admin}`);
 }
@@ -95,7 +98,7 @@ async function createCustomers(customerCount: number, trainingTypes: TrainingTyp
     data: {
       firstName: 'Test',
       lastName: 'Customer',
-      email: 'test-customer@velocity.de',
+      email: DEMO_CUSTOMER_CREDENTIALS.email,
       password: testCustomerPassword,
       birthDate: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
       phone: faker.phone.number(),
